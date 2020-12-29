@@ -11,9 +11,8 @@ from torchvision.datasets import ImageFolder
 from torch.utils.data.sampler import SubsetRandomSampler
 
 from torch.optim.lr_scheduler import MultiStepLR 
-#from warmup_scheduler import GradualWarmupScheduler
 from torch.optim.lr_scheduler import StepLR
-from cosine_annearing_with_warmup import *
+from pytorch-cosine-annealing-with-warmup import *
 
 import os
 import argparse
@@ -24,7 +23,7 @@ import numpy as np
 
 #torch.backends.cudnn.enabled = False
 
-parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
+parser = argparse.ArgumentParser(description='PyTorch Sleep Stage')
 parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
 parser.add_argument('--resume', '-r', action='store_true',
                     help='resume from checkpoint')
@@ -33,8 +32,6 @@ args = parser.parse_args()
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 best_acc = 0  # best test accuracy
 start_epoch = 0  # start from epoch 0 or last checkpoint epoch
-
-test_idx = 0
 
 # Data
 print('==> Preparing data..')
@@ -62,9 +59,9 @@ valset = ImageFolder(root='/home/eslab/wyh/medical/data/SNU/img/1920x40/Con_h_FF
 
 batch_size = 5
 
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=2)
-testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle=True, num_workers=2)
-valloader = torch.utils.data.DataLoader(valset, batch_size=batch_size, shuffle=True, num_workers=2)
+trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=5)
+testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle=True, num_workers=5)
+valloader = torch.utils.data.DataLoader(valset, batch_size=batch_size, shuffle=True, num_workers=5)
 
 # Model
 print('==> Building model..')
