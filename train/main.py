@@ -18,7 +18,7 @@ from cosine_annearing_with_warmup import *
 import os
 import argparse
 
-#from models import *
+from models import *
 from utils import progress_bar
 import numpy as np
 
@@ -68,8 +68,9 @@ valloader = torch.utils.data.DataLoader(valset, batch_size=batch_size, shuffle=T
 
 # Model
 print('==> Building model..')
-net = torch.hub.load('pytorch/vision', 'resnet18', pretrained=False)
-net.fc = nn.Linear(512,5)
+#net = torch.hub.load('pytorch/vision', 'resnet18', pretrained=False)
+#net.fc = nn.Linear(512,5)
+net = resnet18_dropout()
 net = net.to(device)
 if device == 'cuda':
     net = torch.nn.DataParallel(net)

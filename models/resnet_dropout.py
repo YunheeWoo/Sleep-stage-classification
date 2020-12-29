@@ -19,22 +19,23 @@ def conv1x1(in_planes: int, out_planes: int, stride: int = 1) -> nn.Conv2d:
     """1x1 convolution"""
     return nn.Conv2d(in_planes, out_planes, kernel_size=1, stride=stride, bias=False)
 
-
+# The block which used in small model (18, 34)
+# It works like normal block (inplanes -> 3x3 -> 3x3 -> planes) 
 class BasicBlock_dropout(nn.Module):
     expansion: int = 1
 
     def __init__(
         self,
-        inplanes: int,
-        planes: int,
+        inplanes: int,  # input
+        planes: int,    # output
         stride: int = 1,
-        downsample: Optional[nn.Module] = None,
+        downsample: Optional[nn.Module] = None, # 
         groups: int = 1,
         base_width: int = 64,
-        dilation: int = 1,
+        dilation: int = 1, 
         norm_layer: Optional[Callable[..., nn.Module]] = None
     ) -> None:
-        super(BasicBlock, self).__init__()
+        super(BasicBlock_dropout, self).__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         if groups != 1 or base_width != 64:
@@ -47,8 +48,9 @@ class BasicBlock_dropout(nn.Module):
         self.relu = nn.ReLU(inplace=True)
         self.conv2 = conv3x3(planes, planes)
         self.bn2 = norm_layer(planes)
-        self.downsample = downsample
+        self.downsample = downsample  # to addition with main output and shortcut output, channel must be same, so use downsample to match
         self.stride = stride
+        self.dropout = nn.Dropout()
 
     def forward(self, x: Tensor) -> Tensor:
         identity = x
@@ -56,6 +58,7 @@ class BasicBlock_dropout(nn.Module):
         out = self.conv1(x)
         out = self.bn1(out)
         out = self.relu(out)
+        out = self.dropout(out)
 
         out = self.conv2(out)
         out = self.bn2(out)
@@ -65,11 +68,12 @@ class BasicBlock_dropout(nn.Module):
 
         out += identity
         out = self.relu(out)
+        out = self.dropout(out)
 
         return out
 
-
-class Bottleneck(nn.Module):
+# The block which used in big model (50, 101, 152)
+class Bottleneck_dropout(nn.Module):
     # Bottleneck in torchvision places the stride for downsampling at 3x3 convolution(self.conv2)
     # while original implementation places the stride at the first 1x1 convolution(self.conv1)
     # according to "Deep residual learning for image recognition"https://arxiv.org/abs/1512.03385.
@@ -89,7 +93,7 @@ class Bottleneck(nn.Module):
         dilation: int = 1,
         norm_layer: Optional[Callable[..., nn.Module]] = None
     ) -> None:
-        super(Bottleneck, self).__init__()
+        super(Bottleneck_dropout, self).__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         width = int(planes * (base_width / 64.)) * groups
@@ -103,6 +107,7 @@ class Bottleneck(nn.Module):
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
         self.stride = stride
+        self.dropout = nn.Dropout()
 
     def forward(self, x: Tensor) -> Tensor:
         identity = x
@@ -110,10 +115,12 @@ class Bottleneck(nn.Module):
         out = self.conv1(x)
         out = self.bn1(out)
         out = self.relu(out)
+        out = self.dropout(out)
 
         out = self.conv2(out)
         out = self.bn2(out)
         out = self.relu(out)
+        out = self.dropout(out)
 
         out = self.conv3(out)
         out = self.bn3(out)
@@ -123,24 +130,25 @@ class Bottleneck(nn.Module):
 
         out += identity
         out = self.relu(out)
+        out = self.dropout(out)
 
         return out
 
 
-class ResNet(nn.Module):
+class ResNet_dropout(nn.Module):
 
     def __init__(
         self,
-        block: Type[Union[BasicBlock, Bottleneck]],
+        block: Type[Union[BasicBlock_dropout, Bottleneck_dropout]],
         layers: List[int],
-        num_classes: int = 1000,
+        num_classes: int = 5,
         zero_init_residual: bool = False,
         groups: int = 1,
         width_per_group: int = 64,
         replace_stride_with_dilation: Optional[List[bool]] = None,
         norm_layer: Optional[Callable[..., nn.Module]] = None
     ) -> None:
-        super(ResNet, self).__init__()
+        super(ResNet_dropout, self).__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         self._norm_layer = norm_layer
@@ -169,7 +177,10 @@ class ResNet(nn.Module):
         self.layer4 = self._make_layer(block, 512, layers[3], stride=2,
                                        dilate=replace_stride_with_dilation[2])
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc = nn.Linear(512 * block.expansion, num_classes)
+        #self.fc = nn.Linear(512 * block.expansion, num_classes)
+        self.fc1 = nn.Linear(512 * block.expansion, 128 * block.expansion)
+        self.fc2 = nn.Linear(128 * block.expansion, num_classes)
+        self.dropout = nn.Dropout()
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -183,12 +194,12 @@ class ResNet(nn.Module):
         # This improves the model by 0.2~0.3% according to https://arxiv.org/abs/1706.02677
         if zero_init_residual:
             for m in self.modules():
-                if isinstance(m, Bottleneck):
+                if isinstance(m, Bottleneck_dropout):
                     nn.init.constant_(m.bn3.weight, 0)  # type: ignore[arg-type]
-                elif isinstance(m, BasicBlock):
+                elif isinstance(m, BasicBlock_dropout):
                     nn.init.constant_(m.bn2.weight, 0)  # type: ignore[arg-type]
 
-    def _make_layer(self, block: Type[Union[BasicBlock, Bottleneck]], planes: int, blocks: int,
+    def _make_layer(self, block: Type[Union[BasicBlock_dropout, Bottleneck_dropout]], planes: int, blocks: int,
                     stride: int = 1, dilate: bool = False) -> nn.Sequential:
         norm_layer = self._norm_layer
         downsample = None
@@ -218,6 +229,7 @@ class ResNet(nn.Module):
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
+        x = self.dropout(x)
         x = self.maxpool(x)
 
         x = self.layer1(x)
@@ -227,7 +239,8 @@ class ResNet(nn.Module):
 
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
-        x = self.fc(x)
+        x = self.fc1(x)
+        x = self.fc2(x)
 
         return x
 
@@ -235,15 +248,15 @@ class ResNet(nn.Module):
         return self._forward_impl(x)
 
 
-def _resnet(
+def _resnet_dropout(
     arch: str,
-    block: Type[Union[BasicBlock, Bottleneck]],
+    block: Type[Union[BasicBlock_dropout, Bottleneck_dropout]],
     layers: List[int],
     pretrained: bool,
     progress: bool,
     **kwargs: Any
-) -> ResNet:
-    model = ResNet(block, layers, **kwargs)
+) -> ResNet_dropout:
+    model = ResNet_dropout(block, layers, **kwargs)
     if pretrained:
         state_dict = load_state_dict_from_url(model_urls[arch],
                                               progress=progress)
@@ -251,56 +264,56 @@ def _resnet(
     return model
 
 
-def resnet18(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+def resnet18_dropout(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
     r"""ResNet-18 model from
     `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_.
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         progress (bool): If True, displays a progress bar of the download to stderr
     """
-    return _resnet('resnet18', BasicBlock, [2, 2, 2, 2], pretrained, progress,
+    return _resnet_dropout('resnet18', BasicBlock_dropout, [2, 2, 2, 2], pretrained, progress,
                    **kwargs)
 
 
-def resnet34(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+def resnet34_dropout(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
     r"""ResNet-34 model from
     `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_.
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         progress (bool): If True, displays a progress bar of the download to stderr
     """
-    return _resnet('resnet34', BasicBlock, [3, 4, 6, 3], pretrained, progress,
+    return _resnet_dropout('resnet34', BasicBlock_dropout, [3, 4, 6, 3], pretrained, progress,
                    **kwargs)
 
 
-def resnet50(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+def resnet50_dropout(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
     r"""ResNet-50 model from
     `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_.
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         progress (bool): If True, displays a progress bar of the download to stderr
     """
-    return _resnet('resnet50', Bottleneck, [3, 4, 6, 3], pretrained, progress,
+    return _resnet_dropout('resnet50', Bottleneck_dropout, [3, 4, 6, 3], pretrained, progress,
                    **kwargs)
 
 
-def resnet101(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+def resnet101_dropout(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
     r"""ResNet-101 model from
     `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_.
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         progress (bool): If True, displays a progress bar of the download to stderr
     """
-    return _resnet('resnet101', Bottleneck, [3, 4, 23, 3], pretrained, progress,
+    return _resnet_dropout('resnet101', Bottleneck_dropout, [3, 4, 23, 3], pretrained, progress,
                    **kwargs)
 
 
-def resnet152(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+def resnet152_dropout(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
     r"""ResNet-152 model from
     `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_.
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         progress (bool): If True, displays a progress bar of the download to stderr
     """
-    return _resnet('resnet152', Bottleneck, [3, 8, 36, 3], pretrained, progress,
+    return _resnet_dropout('resnet152', Bottleneck_dropout, [3, 8, 36, 3], pretrained, progress,
                    **kwargs)

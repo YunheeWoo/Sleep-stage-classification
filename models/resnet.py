@@ -32,7 +32,7 @@ class BasicBlock(nn.Module):
         downsample: Optional[nn.Module] = None, # 
         groups: int = 1,
         base_width: int = 64,
-        dilation: int = 1,  # gap in kernel
+        dilation: int = 1, 
         norm_layer: Optional[Callable[..., nn.Module]] = None
     ) -> None:
         super(BasicBlock, self).__init__()
@@ -69,7 +69,7 @@ class BasicBlock(nn.Module):
 
         return out
 
-# The block which used in small model (18, 34)
+# The block which used in big model (50, 101, 152)
 class Bottleneck(nn.Module):
     # Bottleneck in torchvision places the stride for downsampling at 3x3 convolution(self.conv2)
     # while original implementation places the stride at the first 1x1 convolution(self.conv1)
@@ -134,7 +134,7 @@ class ResNet(nn.Module):
         self,
         block: Type[Union[BasicBlock, Bottleneck]],
         layers: List[int],
-        num_classes: int = 1000,
+        num_classes: int = 5,
         zero_init_residual: bool = False,
         groups: int = 1,
         width_per_group: int = 64,
