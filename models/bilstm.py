@@ -14,9 +14,7 @@ class BiLSTM(nn.Module):
         cell = Variable(torch.zeros(self.num_layers*2,batch_size,self.hidden_size))
         return hidden, cell
         
-        
     def forward(self, input):
-        Variable(torch.zeros(self.num_directions * self.num_layers, batch_size, self.hidden_dim).cuda())
-        Variable(torch.zeros(self.num_directions * self.num_layers, batch_size, self.hidden_dim).cuda())
+        
 
 

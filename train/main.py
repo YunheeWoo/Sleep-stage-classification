@@ -84,11 +84,15 @@ if args.resume:
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(net.parameters(), lr=0.1, momentum=0.9, weight_decay=1e-4)
-#scheduler = MultiStepLR(optimizer, milestones=[30,60], gamma=0.1)
-#scheduler_warmup = GradualWarmupScheduler(optimizer, multiplier=1, total_epoch=5, after_scheduler=scheduler)
 
-scheduler = CosineAnnealingWarmUpRestarts(optimizer, T_0=30, T_mult=1, eta_max=0.1, T_up=5, gamma=0.8)
-
+#scheduler = CosineAnnealingWarmUpRestarts(optimizer, T_0=30, T_mult=1, eta_max=0.1, T_up=5, gamma=0.8)
+scheduler = CosineAnnealingWarmupRestarts(optimizer,
+                                          first_cycle_steps=30,
+                                          cycle_mult=1.0,
+                                          max_lr=0.1,
+                                          min_lr=0.0001,
+                                          warmup_steps=5,
+                                          gamma=0.8)
 
 #conf = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]]
 
@@ -106,9 +110,6 @@ def train(epoch):
         outputs = net(inputs)
         loss = criterion(outputs, targets)
         loss.backward()
-        #scheduler_warmup.step(epoch)
-        #for param_group in optimizer.param_groups:
-        #    return param_group['lr']
         
         scheduler.step()
         optimizer.step()
