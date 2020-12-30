@@ -14,3 +14,5 @@ for d in dirs:
         datas = os.listdir(src_path+d+p)
         for data in datas:
             epoch = np.load(src_path+d+p+'/'+data)
+
+            
