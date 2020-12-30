@@ -1,4 +1,3 @@
-'''Train CIFAR10 with PyTorch.'''
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -20,37 +19,40 @@ import argparse
 from models import *
 from utils import progress_bar
 import numpy as np
+from pathlib import Path
 
 #torch.backends.cudnn.enabled = False
 
 parser = argparse.ArgumentParser(description='PyTorch Sleep Stage')
-parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
-parser.add_argument('--resume', '-r', action='store_true',
-                    help='resume from checkpoint')
+#parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
+parser.add_argument('--resume', '-r', action='store_true', help='resume from checkpoint')
+parser.add_argument('--conf', '-c', action='store_true', help='Draw Confusion Matrix')
 args = parser.parse_args()
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 best_acc = 0  # best test accuracy
 start_epoch = 0  # start from epoch 0 or last checkpoint epoch
 
+data_path = Path('/home/eslab/wyh/data/')
+
 # Data
 print('==> Preparing data..')
 
-trainset = ImageFolder(root='/home/eslab/wyh/medical/data/SNU/img/1920x40/Con_h_FFT_C3-M2,E2-M1,E1-M2/train',transform=transforms.Compose([
+trainset = ImageFolder(root=data_path / 'train',transform=transforms.Compose([
                                transforms.RandomHorizontalFlip(),
                                transforms.ToTensor(), 
                                transforms.Normalize(mean=[0.9755, 0.9819, 0.9867],
                                      std=[0.1405, 0.1195, 0.1016])
                            ]))
                     
-testset = ImageFolder(root='/home/eslab/wyh/medical/data/SNU/img/1920x40/Con_h_FFT_C3-M2,E2-M1,E1-M2/test',transform=transforms.Compose([
+testset = ImageFolder(root=data_path / 'test',transform=transforms.Compose([
                                transforms.RandomHorizontalFlip(),
                                transforms.ToTensor(), 
                                transforms.Normalize(mean=[0.9755, 0.9819, 0.9867],
                                      std=[0.1405, 0.1195, 0.1016])
                            ]))
 
-valset = ImageFolder(root='/home/eslab/wyh/medical/data/SNU/img/1920x40/Con_h_FFT_C3-M2,E2-M1,E1-M2/val',transform=transforms.Compose([
+valset = ImageFolder(root=data_path / 'val',transform=transforms.Compose([
                                transforms.RandomHorizontalFlip(),
                                transforms.ToTensor(), 
                                transforms.Normalize(mean=[0.9755, 0.9819, 0.9867],
@@ -81,18 +83,21 @@ if args.resume:
     net.load_state_dict(checkpoint['net'])
     best_acc = checkpoint['acc']
     start_epoch = checkpoint['epoch']
+    scheduler = checkpoint['scheduler']
+    optimizer = checkpoint['optimizer']
+else:
+    optimizer = optim.SGD(net.parameters(), lr=0.1, momentum=0.9, weight_decay=1e-4)
+
+    scheduler = CosineAnnealingWarmupRestarts(optimizer,
+                                            first_cycle_steps=30,
+                                            cycle_mult=1.0,
+                                            max_lr=0.1,
+                                            min_lr=0.0001,
+                                            warmup_steps=5,
+                                            gamma=0.8)
 
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.SGD(net.parameters(), lr=0.1, momentum=0.9, weight_decay=1e-4)
 
-#scheduler = CosineAnnealingWarmUpRestarts(optimizer, T_0=30, T_mult=1, eta_max=0.1, T_up=5, gamma=0.8)
-scheduler = CosineAnnealingWarmupRestarts(optimizer,
-                                          first_cycle_steps=30,
-                                          cycle_mult=1.0,
-                                          max_lr=0.1,
-                                          min_lr=0.0001,
-                                          warmup_steps=5,
-                                          gamma=0.8)
 
 #conf = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]]
 
@@ -110,7 +115,7 @@ def train(epoch):
         outputs = net(inputs)
         loss = criterion(outputs, targets)
         loss.backward()
-        
+
         scheduler.step()
         optimizer.step()
 
@@ -151,6 +156,8 @@ def valid(epoch):
             'net': net.state_dict(),
             'acc': acc,
             'epoch': epoch,
+            'scheduler' : scheduler,
+            'optimizer' : optimizer,
         }
         if not os.path.isdir('checkpoint'):
             os.mkdir('checkpoint')
