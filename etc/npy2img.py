@@ -3,6 +3,7 @@ import argparse
 import numpy as np
 from pathlib import Path
 import datetime
+import matplotlib.pyplot as plt
 
 width = 2000
 height = 100
@@ -24,10 +25,10 @@ def draw_img(data, path, ann, width, height, norm):
         data[idx2] = -m * std
 
     data = np.reshape(data,(-1,6000))
-    annotation = np.load(annotation_path+file)
+    #annotation = np.load(annotation_path+file)
 
-    if not data.shape[0] == ann[0]:
-        print("data shape and annotation do not match")
+    if not data.shape[0] == ann.shape[0]:
+        print("data %d and annotation %d do not match" %(data.shape[0], ann[0]))
         return
 
     img_num = 0
@@ -40,19 +41,19 @@ def draw_img(data, path, ann, width, height, norm):
         plt.axis('off')
         plt.tight_layout()
         plt.subplots_adjust(left = 0, bottom = 0, right = 1, top = 1, hspace = 0, wspace = 0)
-        plt.plot(data[d_idx], linewidth=1, color="black")
-        img_name = str(img_num).zfill(4) + "_" + ann[d_idx] + ".png"
+        plt.plot(data[d_idx], linewidth=0.1, color="black")
+        img_name = str(img_num).zfill(4) + "_" + str(ann[d_idx]) + ".png"
         plt.savefig(path / img_name)
         plt.close('all')
         plt.cla()
         plt.clf()
         img_num += 1
 
-src_path = Path("/home/eslab/wyh/data/npy")
+src_path = Path("/home/eslab/wyh/data/npy/original")
 dst_path = Path("/home/eslab/wyh/data/img")
 ann_path = Path("/home/eslab/wyh/data/annotations")
 
-img_size = width + "x" + height
+img_size = str(width) + "x" + str(height)
 
 normalization = ["min-max-cut", "mean-std-cut", "min-max-discard", "min-max-discard", "original", "min-max", "mean-std"]
 
@@ -62,11 +63,12 @@ patients = os.listdir(src_path)
 patients.sort()
 
 for norm in normalization:
+    print("**************************" + norm + " start **************************")
     for p in patients:
         print("===========" + p + " start ===========")
 
         datas = np.load(src_path / p)
-        ann = np.load(ann_path / p)
+        anns = np.load(ann_path / p)
 
         for sig_idx, signal in enumerate(signal_list):
             if signal == "F3-M2":
@@ -77,11 +79,15 @@ for norm in normalization:
                 continue
             
             print("- " + signal + " start")
+            print("\t", end="")
+            print(datetime.datetime.now())
 
             os.makedirs(dst_path / img_size / signal / p.split(".")[0], exist_ok=True)
             
-            draw_img(data[sig_idx], dst_path / img_size / signal / p.split(".")[0], width, height)
+            draw_img(datas[sig_idx], dst_path / img_size / signal / p.split(".")[0], anns, width, height, norm)
 
             print("- " + signal + " end")
+            print("\t", end="")
+            print(datetime.datetime.now())
 
 
