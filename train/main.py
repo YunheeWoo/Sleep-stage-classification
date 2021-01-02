@@ -74,23 +74,26 @@ valset = SleepDataset(root=data_path / 'val.csv',transform=transforms.Compose([
 
 trainset = SleepDataset("/home/eslab/wyh/data/train.csv", Path("/home/eslab/wyh/data/img/2000x100/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], color="L",
                             transform=transforms.Compose([
+                                    #transforms.Resize([224,224]),
                                     transforms.RandomHorizontalFlip(),
                                     transforms.ToTensor(), 
-                                    transforms.Normalize(mean=[0.9955], std=[0.0396])]))
+                                    transforms.Normalize(mean=[0.0044], std=[0.0396])]))
 
 testset = SleepDataset("/home/eslab/wyh/data/test.csv", Path("/home/eslab/wyh/data/img/2000x100/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], color="L",
                             transform=transforms.Compose([
+                                    #transforms.Resize([224,224]),
                                     transforms.RandomHorizontalFlip(),
                                     transforms.ToTensor(), 
-                                    transforms.Normalize(mean=[0.9955], std=[0.0396])]))
+                                    transforms.Normalize(mean=[0.0044], std=[0.0396])]))
 
 valset = SleepDataset("/home/eslab/wyh/data/val.csv", Path("/home/eslab/wyh/data/img/2000x100/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], color="L",
                             transform=transforms.Compose([
+                                    #transforms.Resize([224,224]),
                                     transforms.RandomHorizontalFlip(),
                                     transforms.ToTensor(), 
-                                    transforms.Normalize(mean=[0.9955], std=[0.0396])]))
+                                    transforms.Normalize(mean=[0.0044], std=[0.0396])]))
 
-batch_size = 10
+batch_size = 15
 
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=5)
 testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle=True, num_workers=5)
@@ -136,6 +139,7 @@ criterion = nn.CrossEntropyLoss()
 # Training
 def train(epoch):
     print('\nEpoch: %d' % epoch)
+    print(get_lr(optimizer))
     net.train()
     train_loss = 0
     correct = 0
@@ -158,7 +162,7 @@ def train(epoch):
                      % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
     scheduler.step()
-    print(get_lr(optimizer))
+    
 
 
 def valid(epoch):
