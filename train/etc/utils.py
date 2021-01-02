@@ -27,6 +27,10 @@ def makecsv(dir, f_name):
         csvwriter.writerow([item,])
     csvfile.close()
 
+def get_lr(optimizer):
+    for param_group in optimizer.param_groups:
+        return param_group['lr']
+
 def pil_loader_grayscale(path: str) -> Image.Image:
     # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
     with open(path, 'rb') as f:

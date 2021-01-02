@@ -110,11 +110,11 @@ else:
     optimizer = optim.SGD(net.parameters(), lr=0.1, momentum=0.9, weight_decay=1e-4)
 
     scheduler = CosineAnnealingWarmupRestarts(optimizer,
-                                            first_cycle_steps=30,
+                                            first_cycle_steps=50,
                                             cycle_mult=1.0,
                                             max_lr=0.1,
                                             min_lr=0.0001,
-                                            warmup_steps=5,
+                                            warmup_steps=10,
                                             gamma=0.8)
 
 criterion = nn.CrossEntropyLoss()
