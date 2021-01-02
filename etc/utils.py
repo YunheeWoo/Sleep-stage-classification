@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms, utils
 from torchvision.datasets import ImageFolder
+from PIL import Image
 import csv
 
 def csv2list(csv_file):

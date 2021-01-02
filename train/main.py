@@ -20,6 +20,7 @@ from models import *
 from utils import progress_bar
 import numpy as np
 from pathlib import Path
+from etc import *
 
 #torch.backends.cudnn.enabled = False
 
@@ -38,21 +39,21 @@ data_path = Path('/home/eslab/wyh/data/')
 # Data
 print('==> Preparing data..')
 
-trainset = ImageFolder(root=data_path / 'train',transform=transforms.Compose([
+trainset = SleepDataset(root=data_path / 'train.csv',transform=transforms.Compose([
                                transforms.RandomHorizontalFlip(),
                                transforms.ToTensor(), 
                                transforms.Normalize(mean=[0.9755, 0.9819, 0.9867],
                                      std=[0.1405, 0.1195, 0.1016])
                            ]))
                     
-testset = ImageFolder(root=data_path / 'test',transform=transforms.Compose([
+testset = SleepDataset(root=data_path / 'test.csv',transform=transforms.Compose([
                                transforms.RandomHorizontalFlip(),
                                transforms.ToTensor(), 
                                transforms.Normalize(mean=[0.9755, 0.9819, 0.9867],
                                      std=[0.1405, 0.1195, 0.1016])
                            ]))
 
-valset = ImageFolder(root=data_path / 'val',transform=transforms.Compose([
+valset = SleepDataset(root=data_path / 'val.csv',transform=transforms.Compose([
                                transforms.RandomHorizontalFlip(),
                                transforms.ToTensor(), 
                                transforms.Normalize(mean=[0.9755, 0.9819, 0.9867],

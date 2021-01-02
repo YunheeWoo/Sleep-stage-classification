@@ -62,9 +62,9 @@ signal_list = ["EMG", "C3-M2", "C4-M1", "E1-M2", "E2-M1", "F3-M2", "F4-M1", "O1-
 patients = os.listdir(src_path)
 patients.sort()
 
-for norm in normalization:
+for norm in normalization[1:]:
     print("**************************" + norm + " start **************************")
-    for p in patients:
+    for p in patients[320:]:
         print("===========" + p + " start ===========")
 
         datas = np.load(src_path / p)
@@ -82,9 +82,9 @@ for norm in normalization:
             print("\t", end="")
             print(datetime.datetime.now())
 
-            os.makedirs(dst_path / img_size / signal / p.split(".")[0], exist_ok=True)
+            os.makedirs(dst_path / img_size / norm / signal / p.split(".")[0], exist_ok=True)
             
-            draw_img(datas[sig_idx], dst_path / img_size / signal / p.split(".")[0], anns, width, height, norm)
+            draw_img(datas[sig_idx], dst_path / img_size / norm / signal / p.split(".")[0], anns, width, height, norm)
 
             print("- " + signal + " end")
             print("\t", end="")
