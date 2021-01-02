@@ -11,16 +11,25 @@ from torch.utils.data.sampler import SubsetRandomSampler
 
 from torch.optim.lr_scheduler import MultiStepLR 
 from torch.optim.lr_scheduler import StepLR
-from pytorch-cosine-annealing-with-warmup import *
+#from pytorch-cosine-annealing-with-warmup import *
 
 import os
 import argparse
+import sys
 
 from models import *
 from utils import progress_bar
 import numpy as np
 from pathlib import Path
 from etc import *
+
+sys.path.append('/home/eslab/wyh/Sleep-stage-classification/train/etc')
+sys.path.append('/home/eslab/wyh/Sleep-stage-classification/train/models')
+
+from SleepDataloader import *
+from util import *
+from resnet_dropout import *
+from resnet import *
 
 #torch.backends.cudnn.enabled = False
 
@@ -66,19 +75,19 @@ trainset = SleepDataset("/home/eslab/wyh/data/train.csv", Path("/home/eslab/wyh/
                             transform=transforms.Compose([
                                     transforms.RandomHorizontalFlip(),
                                     transforms.ToTensor(), 
-                                    transforms.Normalize(mean=[0.9955], std=[0.0396])
+                                    transforms.Normalize(mean=[0.9955], std=[0.0396])]))
 
 testset = SleepDataset("/home/eslab/wyh/data/test.csv", Path("/home/eslab/wyh/data/img/2000x100/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], color="L",
                             transform=transforms.Compose([
                                     transforms.RandomHorizontalFlip(),
                                     transforms.ToTensor(), 
-                                    transforms.Normalize(mean=[0.9955], std=[0.0396])
+                                    transforms.Normalize(mean=[0.9955], std=[0.0396])]))
 
 valset = SleepDataset("/home/eslab/wyh/data/val.csv", Path("/home/eslab/wyh/data/img/2000x100/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], color="L",
                             transform=transforms.Compose([
                                     transforms.RandomHorizontalFlip(),
                                     transforms.ToTensor(), 
-                                    transforms.Normalize(mean=[0.9955], std=[0.0396])
+                                    transforms.Normalize(mean=[0.9955], std=[0.0396])]))
 
 batch_size = 5
 
@@ -90,7 +99,7 @@ valloader = torch.utils.data.DataLoader(valset, batch_size=batch_size, shuffle=T
 print('==> Building model..')
 #net = torch.hub.load('pytorch/vision', 'resnet18', pretrained=False)
 #net.fc = nn.Linear(512,5)
-net = resnet18_dropout()
+net = resnet18_dropout_grayscale()
 net = net.to(device)
 if device == 'cuda':
     net = torch.nn.DataParallel(net)
@@ -139,6 +148,7 @@ def train(epoch):
 
         scheduler.step()
         optimizer.step()
+        print(get_lr(optimizer))
 
         train_loss += loss.item()
         _, predicted = outputs.max(1)

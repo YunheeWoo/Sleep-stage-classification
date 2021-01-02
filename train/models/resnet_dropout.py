@@ -1,7 +1,7 @@
 import torch
 from torch import Tensor
 import torch.nn as nn
-from .utils import load_state_dict_from_url
+#from .utils import load_state_dict_from_url
 from typing import Type, Any, Callable, Union, List, Optional
 
 
@@ -391,7 +391,7 @@ def _resnet_dropout(
         model.load_state_dict(state_dict)
     return model
 
-    def _resnet_dropout_grayscale(
+def _resnet_dropout_grayscale(
     arch: str,
     block: Type[Union[BasicBlock_dropout, Bottleneck_dropout]],
     layers: List[int],
@@ -407,7 +407,7 @@ def _resnet_dropout(
     return model
 
 
-def resnet18_dropout(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+def resnet18_dropout(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet_dropout:
     r"""ResNet-18 model from
     `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_.
     Args:
@@ -418,7 +418,7 @@ def resnet18_dropout(pretrained: bool = False, progress: bool = True, **kwargs: 
                    **kwargs)
 
 
-def resnet34_dropout(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+def resnet34_dropout(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet_dropout:
     r"""ResNet-34 model from
     `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_.
     Args:
@@ -429,7 +429,7 @@ def resnet34_dropout(pretrained: bool = False, progress: bool = True, **kwargs: 
                    **kwargs)
 
 
-def resnet50_dropout(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+def resnet50_dropout(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet_dropout:
     r"""ResNet-50 model from
     `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_.
     Args:
@@ -440,7 +440,7 @@ def resnet50_dropout(pretrained: bool = False, progress: bool = True, **kwargs: 
                    **kwargs)
 
 
-def resnet101_dropout(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+def resnet101_dropout(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet_dropout:
     r"""ResNet-101 model from
     `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_.
     Args:
@@ -451,7 +451,7 @@ def resnet101_dropout(pretrained: bool = False, progress: bool = True, **kwargs:
                    **kwargs)
 
 
-def resnet152_dropout(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+def resnet152_dropout(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet_dropout:
     r"""ResNet-152 model from
     `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_.
     Args:
@@ -461,7 +461,7 @@ def resnet152_dropout(pretrained: bool = False, progress: bool = True, **kwargs:
     return _resnet_dropout('resnet152', Bottleneck_dropout, [3, 8, 36, 3], pretrained, progress,
                    **kwargs)
 
-def resnet18_dropout_grayscale(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+def resnet18_dropout_grayscale(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet_dropout_grayscale:
     r"""ResNet-18 model from
     `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_.
     Args:
@@ -472,7 +472,7 @@ def resnet18_dropout_grayscale(pretrained: bool = False, progress: bool = True, 
                    **kwargs)
 
 
-def resnet34_dropout_grayscale(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+def resnet34_dropout_grayscale(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet_dropout_grayscale:
     r"""ResNet-34 model from
     `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_.
     Args:
@@ -483,7 +483,7 @@ def resnet34_dropout_grayscale(pretrained: bool = False, progress: bool = True, 
                    **kwargs)
 
 
-def resnet50_dropout_grayscale(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+def resnet50_dropout_grayscale(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet_dropout_grayscale:
     r"""ResNet-50 model from
     `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_.
     Args:
@@ -494,7 +494,7 @@ def resnet50_dropout_grayscale(pretrained: bool = False, progress: bool = True, 
                    **kwargs)
 
 
-def resnet101_dropout_grayscale(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+def resnet101_dropout_grayscale(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet_dropout_grayscale:
     r"""ResNet-101 model from
     `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_.
     Args:
@@ -505,7 +505,7 @@ def resnet101_dropout_grayscale(pretrained: bool = False, progress: bool = True,
                    **kwargs)
 
 
-def resnet152_dropout_grayscale(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+def resnet152_dropout_grayscale(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet_dropout_grayscale:
     r"""ResNet-152 model from
     `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_.
     Args:

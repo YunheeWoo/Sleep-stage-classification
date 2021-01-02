@@ -450,7 +450,7 @@ def resnet152(pretrained: bool = False, progress: bool = True, **kwargs: Any) ->
     return _resnet('resnet152', Bottleneck, [3, 8, 36, 3], pretrained, progress,
                    **kwargs)
 
-def resnet18_grayscale(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+def resnet18_grayscale(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet_grayscale:
     r"""ResNet-18 model from
     `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_.
     Args:
@@ -461,7 +461,7 @@ def resnet18_grayscale(pretrained: bool = False, progress: bool = True, **kwargs
                    **kwargs)
 
 
-def resnet34_grayscale(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+def resnet34_grayscale(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet_grayscale:
     r"""ResNet-34 model from
     `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_.
     Args:
@@ -472,7 +472,7 @@ def resnet34_grayscale(pretrained: bool = False, progress: bool = True, **kwargs
                    **kwargs)
 
 
-def resnet50_grayscale(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+def resnet50_grayscale(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet_grayscale:
     r"""ResNet-50 model from
     `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_.
     Args:
@@ -483,7 +483,7 @@ def resnet50_grayscale(pretrained: bool = False, progress: bool = True, **kwargs
                    **kwargs)
 
 
-def resnet101_grayscale(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+def resnet101_grayscale(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet_grayscale:
     r"""ResNet-101 model from
     `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_.
     Args:
@@ -494,7 +494,7 @@ def resnet101_grayscale(pretrained: bool = False, progress: bool = True, **kwarg
                    **kwargs)
 
 
-def resnet152_grayscale(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+def resnet152_grayscale(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet_grayscale:
     r"""ResNet-152 model from
     `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_.
     Args:
