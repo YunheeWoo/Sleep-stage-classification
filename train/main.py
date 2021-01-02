@@ -30,6 +30,7 @@ from SleepDataloader import *
 from util import *
 from resnet_dropout import *
 from resnet import *
+from cosine_annearing_with_warmup import *
 
 #torch.backends.cudnn.enabled = False
 
@@ -89,7 +90,7 @@ valset = SleepDataset("/home/eslab/wyh/data/val.csv", Path("/home/eslab/wyh/data
                                     transforms.ToTensor(), 
                                     transforms.Normalize(mean=[0.9955], std=[0.0396])]))
 
-batch_size = 5
+batch_size = 10
 
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=5)
 testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle=True, num_workers=5)
@@ -146,9 +147,7 @@ def train(epoch):
         loss = criterion(outputs, targets)
         loss.backward()
 
-        scheduler.step()
         optimizer.step()
-        print(get_lr(optimizer))
 
         train_loss += loss.item()
         _, predicted = outputs.max(1)
@@ -157,6 +156,9 @@ def train(epoch):
 
         progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
                      % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
+
+    scheduler.step()
+    print(get_lr(optimizer))
 
 
 def valid(epoch):

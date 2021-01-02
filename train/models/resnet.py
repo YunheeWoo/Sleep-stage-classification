@@ -1,13 +1,14 @@
 import torch
 from torch import Tensor
 import torch.nn as nn
-from .utils import load_state_dict_from_url
+#from .utils import load_state_dict_from_url
 from typing import Type, Any, Callable, Union, List, Optional
 
-
+"""
 __all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101',
            'resnet152', 'resnext50_32x4d', 'resnext101_32x8d',
            'wide_resnet50_2', 'wide_resnet101_2']
+"""
 
 def conv3x3(in_planes: int, out_planes: int, stride: int = 1, groups: int = 1, dilation: int = 1) -> nn.Conv2d:
     """3x3 convolution with padding"""
@@ -267,7 +268,7 @@ class ResNet_grayscale(nn.Module):
         replace_stride_with_dilation: Optional[List[bool]] = None,
         norm_layer: Optional[Callable[..., nn.Module]] = None
     ) -> None:
-        super(ResNet, self).__init__()
+        super(ResNet_grayscale, self).__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         self._norm_layer = norm_layer
