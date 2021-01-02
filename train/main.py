@@ -45,55 +45,33 @@ best_acc = 0  # best test accuracy
 start_epoch = 0  # start from epoch 0 or last checkpoint epoch
 
 data_path = Path('/home/eslab/wyh/data/')
+checkpoint_name = 'min-max-cut-fail-resize.pth'
 
 # Data
 print('==> Preparing data..')
 
-"""
-trainset = SleepDataset(root=data_path / 'train.csv',transform=transforms.Compose([
-                               transforms.RandomHorizontalFlip(),
-                               transforms.ToTensor(), 
-                               transforms.Normalize(mean=[0.9755, 0.9819, 0.9867],
-                                     std=[0.1405, 0.1195, 0.1016])
-                           ]))
-                    
-testset = SleepDataset(root=data_path / 'test.csv',transform=transforms.Compose([
-                               transforms.RandomHorizontalFlip(),
-                               transforms.ToTensor(), 
-                               transforms.Normalize(mean=[0.9755, 0.9819, 0.9867],
-                                     std=[0.1405, 0.1195, 0.1016])
-                           ]))
-
-valset = SleepDataset(root=data_path / 'val.csv',transform=transforms.Compose([
-                               transforms.RandomHorizontalFlip(),
-                               transforms.ToTensor(), 
-                               transforms.Normalize(mean=[0.9755, 0.9819, 0.9867],
-                                     std=[0.1405, 0.1195, 0.1016])
-                           ]))
-"""
-
-trainset = SleepDataset("/home/eslab/wyh/data/train.csv", Path("/home/eslab/wyh/data/img/2000x100/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], color="L",
+trainset = SleepDataset("/home/eslab/wyh/data/train.csv", Path("/home/eslab/wyh/data/img/fail/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], color="L",
                             transform=transforms.Compose([
-                                    #transforms.Resize([224,224]),
+                                    transforms.Resize([224,224]),
                                     transforms.RandomHorizontalFlip(),
                                     transforms.ToTensor(), 
                                     transforms.Normalize(mean=[0.0044], std=[0.0396])]))
 
-testset = SleepDataset("/home/eslab/wyh/data/test.csv", Path("/home/eslab/wyh/data/img/2000x100/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], color="L",
+testset = SleepDataset("/home/eslab/wyh/data/test.csv", Path("/home/eslab/wyh/data/img/fail/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], color="L",
                             transform=transforms.Compose([
-                                    #transforms.Resize([224,224]),
+                                    transforms.Resize([224,224]),
                                     transforms.RandomHorizontalFlip(),
                                     transforms.ToTensor(), 
                                     transforms.Normalize(mean=[0.0044], std=[0.0396])]))
 
-valset = SleepDataset("/home/eslab/wyh/data/val.csv", Path("/home/eslab/wyh/data/img/2000x100/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], color="L",
+valset = SleepDataset("/home/eslab/wyh/data/val.csv", Path("/home/eslab/wyh/data/img/fail/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], color="L",
                             transform=transforms.Compose([
-                                    #transforms.Resize([224,224]),
+                                    transforms.Resize([224,224]),
                                     transforms.RandomHorizontalFlip(),
                                     transforms.ToTensor(), 
                                     transforms.Normalize(mean=[0.0044], std=[0.0396])]))
 
-batch_size = 15
+batch_size = 128
 
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=5)
 testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle=True, num_workers=5)
@@ -113,7 +91,7 @@ if args.resume:
     # Load checkpoint.
     print('==> Resuming from checkpoint..')
     assert os.path.isdir('checkpoint'), 'Error: no checkpoint directory found!'
-    checkpoint = torch.load('./checkpoint/min-max-cut.pth')
+    checkpoint = torch.load('./checkpoint/'+checkpoint_name)
     net.load_state_dict(checkpoint['net'])
     best_acc = checkpoint['acc']
     start_epoch = checkpoint['epoch']
@@ -127,7 +105,7 @@ else:
                                             cycle_mult=1.0,
                                             max_lr=0.1,
                                             min_lr=0.0001,
-                                            warmup_steps=10,
+                                            warmup_steps=5,
                                             gamma=0.8)
 
 criterion = nn.CrossEntropyLoss()
@@ -160,8 +138,6 @@ def train(epoch):
 
         progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
                      % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
-
-    scheduler.step()
     
 
 
@@ -172,7 +148,7 @@ def valid(epoch):
     correct = 0
     total = 0
     with torch.no_grad():
-        for batch_idx, (inputs, targets) in enumerate(testloader):
+        for batch_idx, (inputs, targets) in enumerate(valloader):
             inputs, targets = inputs.to(device), targets.to(device)
             outputs = net(inputs)
             loss = criterion(outputs, targets)
@@ -198,7 +174,7 @@ def valid(epoch):
         }
         if not os.path.isdir('checkpoint'):
             os.mkdir('checkpoint')
-        torch.save(state, './checkpoint/min-max-cut.pth')
+        torch.save(state, './checkpoint/'+checkpoint_name)
         best_acc = acc
 
 def test(epoch):
@@ -234,3 +210,4 @@ for epoch in range(start_epoch, start_epoch+300):
     train(epoch)
     valid(epoch)
     test(epoch)
+    scheduler.step()

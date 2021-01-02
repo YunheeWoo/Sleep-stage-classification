@@ -10,19 +10,39 @@ height = 100
 
 def draw_img(data, path, ann, width, height, norm):
 
+    std = np.std(data)
+    mean = np.mean(data)
+
+    y_min = None
+    y_max = None
+
     # preprocessing
     if norm == "min-max-cut" and norm == "mean-std-cut":
         cut_value = 192*1e-06
         data = np.where(data < -cut_value, -cut_value, data)
         data = np.where(data > cut_value, cut_value, data)
+        
 
     if norm == "min-max-discard" and norm == "mean-std-discard":
         m = 3.5
-        std = np.std(data)
         idx1 = (data - np.mean(data)) > m * np.std(data)
         idx2 = (data - np.mean(data)) < -m * np.std(data)
         data[idx1] = m * std
         data[idx2] = -m * std
+
+    if "min" in norm:
+        data = (data - np.min(data)) / (np.max(data) - np.min(data))
+        y_min = 0
+        y_max = 1
+    if "mean" in norm:
+        data = (data - mean) / std
+
+        if abs(np.min(data)) > abs(np.max(data)):
+            y_min = -abs(np.min(data))
+            y_max = abs(np.min(data))
+        else:
+            y_min = -abs(np.max(data))
+            y_max = abs(np.max(data))
 
     data = np.reshape(data,(-1,6000))
     #annotation = np.load(annotation_path+file)
@@ -35,7 +55,7 @@ def draw_img(data, path, ann, width, height, norm):
 
     for d_idx in range(data.shape[0]):
         plt.figure(figsize=(width/300,height/300), dpi=300)
-        plt.ylim(np.min(data), np.max(data))
+        plt.ylim(y_min, y_max)
         plt.xlim(0,6000)
         plt.box(on=None)
         plt.axis('off')
@@ -62,7 +82,7 @@ signal_list = ["EMG", "C3-M2", "C4-M1", "E1-M2", "E2-M1", "F3-M2", "F4-M1", "O1-
 patients = os.listdir(src_path)
 patients.sort()
 
-for norm in normalization[1:]:
+for norm in normalization[:]:
     print("**************************" + norm + " start **************************")
     for p in patients[320:]:
         print("===========" + p + " start ===========")
