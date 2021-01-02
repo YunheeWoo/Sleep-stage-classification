@@ -25,7 +25,7 @@ from etc import *
 #torch.backends.cudnn.enabled = False
 
 parser = argparse.ArgumentParser(description='PyTorch Sleep Stage')
-#parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
+parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
 parser.add_argument('--resume', '-r', action='store_true', help='resume from checkpoint')
 parser.add_argument('--conf', '-c', action='store_true', help='Draw Confusion Matrix')
 args = parser.parse_args()
@@ -39,6 +39,7 @@ data_path = Path('/home/eslab/wyh/data/')
 # Data
 print('==> Preparing data..')
 
+"""
 trainset = SleepDataset(root=data_path / 'train.csv',transform=transforms.Compose([
                                transforms.RandomHorizontalFlip(),
                                transforms.ToTensor(), 
@@ -59,6 +60,25 @@ valset = SleepDataset(root=data_path / 'val.csv',transform=transforms.Compose([
                                transforms.Normalize(mean=[0.9755, 0.9819, 0.9867],
                                      std=[0.1405, 0.1195, 0.1016])
                            ]))
+"""
+
+trainset = SleepDataset("/home/eslab/wyh/data/train.csv", Path("/home/eslab/wyh/data/img/2000x100/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], color="L",
+                            transform=transforms.Compose([
+                                    transforms.RandomHorizontalFlip(),
+                                    transforms.ToTensor(), 
+                                    transforms.Normalize(mean=[0.9955], std=[0.0396])
+
+testset = SleepDataset("/home/eslab/wyh/data/test.csv", Path("/home/eslab/wyh/data/img/2000x100/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], color="L",
+                            transform=transforms.Compose([
+                                    transforms.RandomHorizontalFlip(),
+                                    transforms.ToTensor(), 
+                                    transforms.Normalize(mean=[0.9955], std=[0.0396])
+
+valset = SleepDataset("/home/eslab/wyh/data/val.csv", Path("/home/eslab/wyh/data/img/2000x100/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], color="L",
+                            transform=transforms.Compose([
+                                    transforms.RandomHorizontalFlip(),
+                                    transforms.ToTensor(), 
+                                    transforms.Normalize(mean=[0.9955], std=[0.0396])
 
 batch_size = 5
 
@@ -80,7 +100,7 @@ if args.resume:
     # Load checkpoint.
     print('==> Resuming from checkpoint..')
     assert os.path.isdir('checkpoint'), 'Error: no checkpoint directory found!'
-    checkpoint = torch.load('./checkpoint/Normal_h.pth')
+    checkpoint = torch.load('./checkpoint/min-max-cut.pth')
     net.load_state_dict(checkpoint['net'])
     best_acc = checkpoint['acc']
     start_epoch = checkpoint['epoch']
@@ -162,7 +182,7 @@ def valid(epoch):
         }
         if not os.path.isdir('checkpoint'):
             os.mkdir('checkpoint')
-        torch.save(state, './checkpoint/FFT_h.pth')
+        torch.save(state, './checkpoint/min-max-cut.pth')
         best_acc = acc
 
 def test(epoch):

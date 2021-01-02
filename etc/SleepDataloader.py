@@ -70,6 +70,6 @@ class SleepDataset(Dataset):
         return sample, target
 
 
-dataset = SleepDataset("/home/eslab/wyh/data/test.csv", Path("/home/eslab/wyh/data/img/2000x100/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], color="L")
+#dataset = SleepDataset("/home/eslab/wyh/data/test.csv", Path("/home/eslab/wyh/data/img/2000x100/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], color="L")
 
-print(dataset[0])
+#print(dataset[0])
