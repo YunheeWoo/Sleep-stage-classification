@@ -45,28 +45,28 @@ best_acc = 0  # best test accuracy
 start_epoch = 0  # start from epoch 0 or last checkpoint epoch
 
 data_path = Path('/home/eslab/wyh/data/')
-checkpoint_name = 'min-max-cut-fail-resize.pth'
+checkpoint_name = 'min-max-cut-fail.pth'
 
 # Data
 print('==> Preparing data..')
 
 trainset = SleepDataset("/home/eslab/wyh/data/train.csv", Path("/home/eslab/wyh/data/img/fail/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], color="L",
                             transform=transforms.Compose([
-                                    transforms.Resize([224,224]),
+                                    #transforms.Resize([224,224]),
                                     transforms.RandomHorizontalFlip(),
                                     transforms.ToTensor(), 
                                     transforms.Normalize(mean=[0.0044], std=[0.0396])]))
 
 testset = SleepDataset("/home/eslab/wyh/data/test.csv", Path("/home/eslab/wyh/data/img/fail/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], color="L",
                             transform=transforms.Compose([
-                                    transforms.Resize([224,224]),
+                                    #transforms.Resize([224,224]),
                                     transforms.RandomHorizontalFlip(),
                                     transforms.ToTensor(), 
                                     transforms.Normalize(mean=[0.0044], std=[0.0396])]))
 
 valset = SleepDataset("/home/eslab/wyh/data/val.csv", Path("/home/eslab/wyh/data/img/fail/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], color="L",
                             transform=transforms.Compose([
-                                    transforms.Resize([224,224]),
+                                    #transforms.Resize([224,224]),
                                     transforms.RandomHorizontalFlip(),
                                     transforms.ToTensor(), 
                                     transforms.Normalize(mean=[0.0044], std=[0.0396])]))
@@ -117,7 +117,6 @@ criterion = nn.CrossEntropyLoss()
 # Training
 def train(epoch):
     print('\nEpoch: %d' % epoch)
-    print(get_lr(optimizer))
     net.train()
     train_loss = 0
     correct = 0
@@ -158,7 +157,7 @@ def valid(epoch):
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
 
-            progress_bar(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
+            progress_bar(batch_idx, len(valloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
                          % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
     # Save checkpoint.
