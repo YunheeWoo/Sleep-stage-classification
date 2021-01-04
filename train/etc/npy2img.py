@@ -9,6 +9,38 @@ width = 2000
 height = 100
 
 def draw_img(data, path, ann, width, height, norm):
+    cut_value = 192*1e-06
+    my_dpi = 300
+
+    img_num = 0
+
+    data = np.where(data < -cut_value, -cut_value, data)
+    data = np.where(data > cut_value, cut_value, data)
+    data = (data - np.min(data)) / (np.max(data) - np.min(data))
+    data = np.reshape(data,(-1,6000))
+        
+    for j in range(data.shape[0]):
+        plt.figure(figsize=(width/my_dpi,height/my_dpi), dpi=my_dpi)
+        plt.ylim(0, 1)
+        plt.xlim(0,6000)
+        plt.box(on=None)
+        plt.axis('off')
+        plt.tight_layout()
+        plt.subplots_adjust(left = 0, bottom = 0, right = 1, top = 1, hspace = 0, wspace = 0)
+        plt.plot(data[j], linewidth=0.2, color="black")
+        #plt.plot(data[j], linewidth=1)
+        img_name = str(img_num).zfill(4) + "_" + str(ann[j]) + ".png"
+        plt.savefig(path / img_name)
+        #plt.savefig(img_path+folder+'/'+str(ann[j])+'/'+str(img_num).zfill(6)+".png")
+        plt.close('all')
+        plt.cla()
+        plt.clf()
+        img_num += 1
+
+    #print(file + " done")
+
+"""
+def draw_img(data, path, ann, width, height, norm):
 
     std = np.std(data)
     mean = np.mean(data)
@@ -34,6 +66,7 @@ def draw_img(data, path, ann, width, height, norm):
         data = (data - np.min(data)) / (np.max(data) - np.min(data))
         y_min = 0
         y_max = 1
+
     if "mean" in norm:
         data = (data - mean) / std
 
@@ -61,19 +94,22 @@ def draw_img(data, path, ann, width, height, norm):
         plt.axis('off')
         plt.tight_layout()
         plt.subplots_adjust(left = 0, bottom = 0, right = 1, top = 1, hspace = 0, wspace = 0)
-        plt.plot(data[d_idx], linewidth=0.1, color="black")
+        plt.plot(data[d_idx], linewidth=0.5, color="black")
         img_name = str(img_num).zfill(4) + "_" + str(ann[d_idx]) + ".png"
         plt.savefig(path / img_name)
         plt.close('all')
         plt.cla()
         plt.clf()
         img_num += 1
-
+"""
 src_path = Path("/home/eslab/wyh/data/npy/original")
-dst_path = Path("/home/eslab/wyh/data/img")
+dst_path = Path("/home/eslab/wyh/data/img/")
+#dst_path = Path("/home/eslab/wyh/data/test")
 ann_path = Path("/home/eslab/wyh/data/annotations")
 
-img_size = str(width) + "x" + str(height)
+allow_list = ["C3-M2", "E1-M2", "E2-M1"]
+
+img_size = str(width) + "x" + str(height) + "/t-02"
 
 normalization = ["min-max-cut", "mean-std-cut", "min-max-discard", "min-max-discard", "original", "min-max", "mean-std"]
 
@@ -82,20 +118,17 @@ signal_list = ["EMG", "C3-M2", "C4-M1", "E1-M2", "E2-M1", "F3-M2", "F4-M1", "O1-
 patients = os.listdir(src_path)
 patients.sort()
 
-for norm in normalization[:]:
+for norm in normalization[:1]:
     print("**************************" + norm + " start **************************")
-    for p in patients[320:]:
+    for p in patients[360:]:
         print("===========" + p + " start ===========")
 
         datas = np.load(src_path / p)
         anns = np.load(ann_path / p)
 
         for sig_idx, signal in enumerate(signal_list):
-            if signal == "F3-M2":
-                print("> F3-M2 skip")
-                continue
-            if signal == "F4-M1":
-                print("> F4-M1 skip")
+            if not signal in allow_list:
+                print("> " + signal + " skip")
                 continue
             
             print("- " + signal + " start")
@@ -109,5 +142,4 @@ for norm in normalization[:]:
             print("- " + signal + " end")
             print("\t", end="")
             print(datetime.datetime.now())
-
 

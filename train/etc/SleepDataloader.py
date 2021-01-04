@@ -24,12 +24,21 @@ class SleepDataset(Dataset):
 
         self.__make_samples__(csv_file)
 
+
     def __loader__(self, path):
         with open(path, 'rb') as f:
             img = Image.open(f)
             if not self.color == None:
                 img = img.convert('L')
-            img = PIL.ImageOps.invert(img)
+            #img = PIL.ImageOps.invert(img)
+
+            if img.mode == 'RGBA':
+                r,g,b,a = img.split()
+                rgb_image = Image.merge('RGB', (r,g,b))
+                img = PIL.ImageOps.invert(rgb_image)
+            else:
+                img = PIL.ImageOps.invert(img)
+
             return img
 
     def __get_img__(self, idx):
@@ -70,6 +79,6 @@ class SleepDataset(Dataset):
         return sample, target
 
 
-#dataset = SleepDataset("/home/eslab/wyh/data/test.csv", Path("/home/eslab/wyh/data/img/2000x100/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], color="L")
+#dataset = SleepDataset("/home/eslab/wyh/data/val.csv", Path("/home/eslab/wyh/data/img/fail/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"])
 
-#print(dataset[0])
+#print(np.array(dataset[0][0]).shape)

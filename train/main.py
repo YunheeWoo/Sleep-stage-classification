@@ -45,33 +45,33 @@ best_acc = 0  # best test accuracy
 start_epoch = 0  # start from epoch 0 or last checkpoint epoch
 
 data_path = Path('/home/eslab/wyh/data/')
-checkpoint_name = 'min-max-cut-fail.pth'
+checkpoint_name = 'min-max-cut-2-resize-gray.pth'
 
 # Data
 print('==> Preparing data..')
 
-trainset = SleepDataset("/home/eslab/wyh/data/train.csv", Path("/home/eslab/wyh/data/img/fail/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], color="L",
+trainset = SleepDataset("/home/eslab/wyh/data/train.csv", Path("/home/eslab/wyh/data/img/2000x100/t-02/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], #color="L",
                             transform=transforms.Compose([
-                                    #transforms.Resize([224,224]),
+                                    transforms.Resize([224,224]),
                                     transforms.RandomHorizontalFlip(),
                                     transforms.ToTensor(), 
                                     transforms.Normalize(mean=[0.0044], std=[0.0396])]))
 
-testset = SleepDataset("/home/eslab/wyh/data/test.csv", Path("/home/eslab/wyh/data/img/fail/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], color="L",
+testset = SleepDataset("/home/eslab/wyh/data/test.csv", Path("/home/eslab/wyh/data/img/2000x100/t-02/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], #color="L",
                             transform=transforms.Compose([
-                                    #transforms.Resize([224,224]),
+                                    transforms.Resize([224,224]),
                                     transforms.RandomHorizontalFlip(),
                                     transforms.ToTensor(), 
                                     transforms.Normalize(mean=[0.0044], std=[0.0396])]))
 
-valset = SleepDataset("/home/eslab/wyh/data/val.csv", Path("/home/eslab/wyh/data/img/fail/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], color="L",
+valset = SleepDataset("/home/eslab/wyh/data/val.csv", Path("/home/eslab/wyh/data/img/2000x100/t-02/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], #color="L",
                             transform=transforms.Compose([
-                                    #transforms.Resize([224,224]),
+                                    transforms.Resize([224,224]),
                                     transforms.RandomHorizontalFlip(),
                                     transforms.ToTensor(), 
                                     transforms.Normalize(mean=[0.0044], std=[0.0396])]))
 
-batch_size = 128
+batch_size = 32
 
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=5)
 testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle=True, num_workers=5)
@@ -79,9 +79,9 @@ valloader = torch.utils.data.DataLoader(valset, batch_size=batch_size, shuffle=T
 
 # Model
 print('==> Building model..')
-#net = torch.hub.load('pytorch/vision', 'resnet18', pretrained=False)
-#net.fc = nn.Linear(512,5)
-net = resnet18_dropout_grayscale()
+net = torch.hub.load('pytorch/vision', 'resnet50', pretrained=False)
+net.fc = nn.Linear(2048,5)
+#net = resnet50_grayscale()
 net = net.to(device)
 if device == 'cuda':
     net = torch.nn.DataParallel(net)
@@ -98,15 +98,10 @@ if args.resume:
     scheduler = checkpoint['scheduler']
     optimizer = checkpoint['optimizer']
 else:
-    optimizer = optim.SGD(net.parameters(), lr=0.1, momentum=0.9, weight_decay=1e-4)
+    optimizer = optim.SGD(net.parameters(), lr=0.0001, momentum=0.9, weight_decay=1e-4)
 
-    scheduler = CosineAnnealingWarmupRestarts(optimizer,
-                                            first_cycle_steps=50,
-                                            cycle_mult=1.0,
-                                            max_lr=0.1,
-                                            min_lr=0.0001,
-                                            warmup_steps=5,
-                                            gamma=0.8)
+    scheduler = CosineAnnealingWarmupRestarts(optimizer, first_cycle_steps=50, cycle_mult=1.0, max_lr=0.1, min_lr=0.0001, warmup_steps=5, gamma=0.8)
+    #scheduler = CosineAnnealingWarmUpRestarts(optimizer, T_0=50, T_mult=1, eta_max=0.1, T_up=5, gamma=0.8)
 
 criterion = nn.CrossEntropyLoss()
 

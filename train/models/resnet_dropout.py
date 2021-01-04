@@ -51,7 +51,7 @@ class BasicBlock_dropout(nn.Module):
         self.bn2 = norm_layer(planes)
         self.downsample = downsample  # to addition with main output and shortcut output, channel must be same, so use downsample to match
         self.stride = stride
-        self.dropout = nn.Dropout()
+        self.dropout = nn.Dropout(p=0.2)
 
     def forward(self, x: Tensor) -> Tensor:
         identity = x
@@ -108,7 +108,7 @@ class Bottleneck_dropout(nn.Module):
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
         self.stride = stride
-        self.dropout = nn.Dropout()
+        self.dropout = nn.Dropout(p=0.2)
 
     def forward(self, x: Tensor) -> Tensor:
         identity = x
@@ -178,10 +178,10 @@ class ResNet_dropout(nn.Module):
         self.layer4 = self._make_layer(block, 512, layers[3], stride=2,
                                        dilate=replace_stride_with_dilation[2])
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        #self.fc = nn.Linear(512 * block.expansion, num_classes)
-        self.fc1 = nn.Linear(512 * block.expansion, 128 * block.expansion)
-        self.fc2 = nn.Linear(128 * block.expansion, num_classes)
-        self.dropout = nn.Dropout()
+        self.fc = nn.Linear(512 * block.expansion, num_classes)
+        #self.fc1 = nn.Linear(512 * block.expansion, 128 * block.expansion)
+        #self.fc2 = nn.Linear(128 * block.expansion, num_classes)
+        self.dropout = nn.Dropout(p=0.2)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -240,8 +240,9 @@ class ResNet_dropout(nn.Module):
 
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
-        x = self.fc1(x)
-        x = self.fc2(x)
+        x = self.fc(x)
+        #x = self.fc1(x)
+        #x = self.fc2(x)
 
         return x
 
@@ -306,10 +307,10 @@ class ResNet_dropout_grayscale(nn.Module):
         self.layer4 = self._make_layer(block, 512, layers[3], stride=2,
                                        dilate=replace_stride_with_dilation[2])
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        #self.fc = nn.Linear(512 * block.expansion, num_classes)
-        self.fc1 = nn.Linear(512 * block.expansion, 128 * block.expansion)
-        self.fc2 = nn.Linear(128 * block.expansion, num_classes)
-        self.dropout = nn.Dropout()
+        self.fc = nn.Linear(512 * block.expansion, num_classes)
+        #self.fc1 = nn.Linear(512 * block.expansion, 64 * block.expansion)
+        #self.fc2 = nn.Linear(64 * block.expansion, num_classes)
+        self.dropout = nn.Dropout(p=0.2)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -368,8 +369,9 @@ class ResNet_dropout_grayscale(nn.Module):
 
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
-        x = self.fc1(x)
-        x = self.fc2(x)
+        x = self.fc(x)
+        #x = self.fc1(x)
+        #x = self.fc2(x)
 
         return x
 

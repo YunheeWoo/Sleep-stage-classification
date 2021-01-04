@@ -171,9 +171,9 @@ class ResNet(nn.Module):
         self.layer4 = self._make_layer(block, 512, layers[3], stride=2,
                                        dilate=replace_stride_with_dilation[2])
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        #self.fc = nn.Linear(512 * block.expansion, num_classes)
-        self.fc1 = nn.Linear(512 * block.expansion, 128 * block.expansion)
-        self.fc2 = nn.Linear(128 * block.expansion, num_classes)
+        self.fc = nn.Linear(512 * block.expansion, num_classes)
+        #self.fc1 = nn.Linear(512 * block.expansion, 128 * block.expansion)
+        #self.fc2 = nn.Linear(128 * block.expansion, num_classes)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -231,8 +231,9 @@ class ResNet(nn.Module):
 
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
-        x = self.fc1(x)
-        x = self.fc2(x)
+        x = self.fc(x)
+        #x = self.fc1(x)
+        #x = self.fc2(x)
 
         return x
 
@@ -297,9 +298,9 @@ class ResNet_grayscale(nn.Module):
         self.layer4 = self._make_layer(block, 512, layers[3], stride=2,
                                        dilate=replace_stride_with_dilation[2])
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        #self.fc = nn.Linear(512 * block.expansion, num_classes)
-        self.fc1 = nn.Linear(512 * block.expansion, 128 * block.expansion)
-        self.fc2 = nn.Linear(128 * block.expansion, num_classes)
+        self.fc = nn.Linear(512 * block.expansion, num_classes)
+        #self.fc1 = nn.Linear(512 * block.expansion, 128 * block.expansion)
+        #self.fc2 = nn.Linear(128 * block.expansion, num_classes)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -357,8 +358,9 @@ class ResNet_grayscale(nn.Module):
 
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
-        x = self.fc1(x)
-        x = self.fc2(x)
+        x = self.fc(x)
+        #x = self.fc1(x)
+        #x = self.fc2(x)
 
         return x
 
