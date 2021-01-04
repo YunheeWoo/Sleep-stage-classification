@@ -120,6 +120,6 @@ class SleepSigLoader(Dataset):
         return sample, target
 
 
-dataset = SleepSigLoader("/home/eslab/wyh/data/val.csv", Path("/home/eslab/wyh/data/img/fail/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], method="min-max-cut", color="L")
+#dataset = SleepSigLoader("/home/eslab/wyh/data/val.csv", Path("/home/eslab/wyh/data/img/fail/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], method="min-max-cut", color="L")
 
-print(np.array(dataset[0][0]).shape)
+#print(np.array(dataset[0][0]).shape)

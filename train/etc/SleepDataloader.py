@@ -24,13 +24,11 @@ class SleepDataset(Dataset):
 
         self.__make_samples__(csv_file)
 
-
     def __loader__(self, path):
         with open(path, 'rb') as f:
             img = Image.open(f)
             if not self.color == None:
                 img = img.convert('L')
-            #img = PIL.ImageOps.invert(img)
 
             if img.mode == 'RGBA':
                 r,g,b,a = img.split()

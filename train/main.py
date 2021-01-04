@@ -103,6 +103,9 @@ else:
     scheduler = CosineAnnealingWarmupRestarts(optimizer, first_cycle_steps=50, cycle_mult=1.0, max_lr=0.1, min_lr=0.0001, warmup_steps=5, gamma=0.8)
     #scheduler = CosineAnnealingWarmUpRestarts(optimizer, T_0=50, T_mult=1, eta_max=0.1, T_up=5, gamma=0.8)
 
+#######
+model, optimizer = amp.initialize(model, optimizer, opt_level="O1")
+#######
 criterion = nn.CrossEntropyLoss()
 
 
@@ -121,7 +124,11 @@ def train(epoch):
         optimizer.zero_grad()
         outputs = net(inputs)
         loss = criterion(outputs, targets)
-        loss.backward()
+        #####
+        with amp.scale_loss(loss, optimizer) as scaled_loss: 
+            scaled_loss.backward()
+        #####
+        #loss.backward()
 
         optimizer.step()
 
