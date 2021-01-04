@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 width = 2000
 height = 100
 
+"""
 def draw_img(data, path, ann, width, height, norm):
     cut_value = 192*1e-06
     my_dpi = 300
@@ -49,13 +50,12 @@ def draw_img(data, path, ann, width, height, norm):
     y_max = None
 
     # preprocessing
-    if norm == "min-max-cut" and norm == "mean-std-cut":
+    if "cut" in norm:
         cut_value = 192*1e-06
         data = np.where(data < -cut_value, -cut_value, data)
         data = np.where(data > cut_value, cut_value, data)
         
-
-    if norm == "min-max-discard" and norm == "mean-std-discard":
+    if "discard" in norm:
         m = 3.5
         idx1 = (data - np.mean(data)) > m * np.std(data)
         idx2 = (data - np.mean(data)) < -m * np.std(data)
@@ -94,33 +94,35 @@ def draw_img(data, path, ann, width, height, norm):
         plt.axis('off')
         plt.tight_layout()
         plt.subplots_adjust(left = 0, bottom = 0, right = 1, top = 1, hspace = 0, wspace = 0)
-        plt.plot(data[d_idx], linewidth=0.5, color="black")
+        plt.plot(data[d_idx], linewidth=0.2, color="black")
         img_name = str(img_num).zfill(4) + "_" + str(ann[d_idx]) + ".png"
         plt.savefig(path / img_name)
         plt.close('all')
         plt.cla()
         plt.clf()
         img_num += 1
-"""
+
 src_path = Path("/home/eslab/wyh/data/npy/original")
 dst_path = Path("/home/eslab/wyh/data/img/")
-#dst_path = Path("/home/eslab/wyh/data/test")
 ann_path = Path("/home/eslab/wyh/data/annotations")
 
 allow_list = ["C3-M2", "E1-M2", "E2-M1"]
 
 img_size = str(width) + "x" + str(height) + "/t-02"
 
-normalization = ["min-max-cut", "mean-std-cut", "min-max-discard", "min-max-discard", "original", "min-max", "mean-std"]
+normalization = ["min-max-cut", "mean-std-cut", "min-max-discard", "mean-std-discard", "original", "min-max", "mean-std"]
 
 signal_list = ["EMG", "C3-M2", "C4-M1", "E1-M2", "E2-M1", "F3-M2", "F4-M1", "O1-M2", "O2-M1"]
 
 patients = os.listdir(src_path)
 patients.sort()
 
+idx = 9
+threshold = 10
+
 for norm in normalization[:1]:
     print("**************************" + norm + " start **************************")
-    for p in patients[360:]:
+    for p in patients[idx*40+threshold:(idx+1)*40]:
         print("===========" + p + " start ===========")
 
         datas = np.load(src_path / p)
