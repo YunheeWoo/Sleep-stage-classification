@@ -43,5 +43,17 @@ def count_labels(csv_file, path):
 
     print(labels)
 
+def count_severity(csv_file):
+    lst = csv2list(csv_file)
+
+    labels = [0,0,0,0]
+
+    for l in lst:
+        labels[int(l[0][-2])] += 1
+
+    print(labels)
+
 
 #count_labels("/home/eslab/wyh/data/val.csv", "/home/eslab/wyh/data/img/fail/min-max-cut/EMG/")
+
+#count_severity("/home/eslab/wyh/data/train.csv")

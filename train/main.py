@@ -50,21 +50,21 @@ checkpoint_name = 'min-max-cut-2-resize-gray.pth'
 # Data
 print('==> Preparing data..')
 
-trainset = SleepDataset("/home/eslab/wyh/data/train.csv", Path("/home/eslab/wyh/data/img/2000x100/t-02/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], #color="L",
+trainset = SleepDataset("/home/eslab/wyh/data/train.csv", Path("/home/eslab//wyh/data/img/2000x100/t-02/min-max-cut/"), ["C3-M2", "E1-M2", "E2-M1"], color="L",
                             transform=transforms.Compose([
                                     transforms.Resize([224,224]),
                                     transforms.RandomHorizontalFlip(),
                                     transforms.ToTensor(), 
                                     transforms.Normalize(mean=[0.0044], std=[0.0396])]))
 
-testset = SleepDataset("/home/eslab/wyh/data/test.csv", Path("/home/eslab/wyh/data/img/2000x100/t-02/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], #color="L",
+testset = SleepDataset("/home/eslab/wyh/data/test.csv", Path("/home/eslab/wyh/data/img/2000x100/t-02/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], color="L",
                             transform=transforms.Compose([
                                     transforms.Resize([224,224]),
                                     transforms.RandomHorizontalFlip(),
                                     transforms.ToTensor(), 
                                     transforms.Normalize(mean=[0.0044], std=[0.0396])]))
 
-valset = SleepDataset("/home/eslab/wyh/data/val.csv", Path("/home/eslab/wyh/data/img/2000x100/t-02/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], #color="L",
+valset = SleepDataset("/home/eslab/wyh/data/val.csv", Path("/home/eslab/wyh/data/img/2000x100/t-02/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], color="L",
                             transform=transforms.Compose([
                                     transforms.Resize([224,224]),
                                     transforms.RandomHorizontalFlip(),
@@ -79,9 +79,9 @@ valloader = torch.utils.data.DataLoader(valset, batch_size=batch_size, shuffle=T
 
 # Model
 print('==> Building model..')
-net = torch.hub.load('pytorch/vision', 'resnet50', pretrained=False)
-net.fc = nn.Linear(2048,5)
-#net = resnet50_grayscale()
+#net = torch.hub.load('pytorch/vision', 'resnet50', pretrained=False)
+#net.fc = nn.Linear(2048,5)
+net = resnet50_grayscale()
 net = net.to(device)
 if device == 'cuda':
     net = torch.nn.DataParallel(net)
