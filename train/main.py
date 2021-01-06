@@ -122,7 +122,8 @@ def train(epoch):
     train_loss = 0
     correct = 0
     total = 0
-    for batch_idx, (inputs, targets) in enumerate(trainloader):
+    loop = tqdm(enumerate(trainloader), total=len(trainloader))
+    for batch_idx, (inputs, targets) in loop:
         inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad()
         outputs = net(inputs)
@@ -140,8 +141,8 @@ def train(epoch):
         total += targets.size(0)
         correct += predicted.eq(targets).sum().item()
 
-        progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-                     % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
+        loop.set_description(f"Epoch [{epoch}/{num_epochs}]")
+        loop.set_postfix(loss = loss.item(), acc=(100.*correct/total))
     
 
 
@@ -152,7 +153,8 @@ def valid(epoch):
     correct = 0
     total = 0
     with torch.no_grad():
-        for batch_idx, (inputs, targets) in enumerate(valloader):
+        loop = tqdm(enumerate(valloader), total=len(valloader))
+        for batch_idx, (inputs, targets) in loop:
             inputs, targets = inputs.to(device), targets.to(device)
             outputs = net(inputs)
             loss = criterion(outputs, targets)
@@ -162,8 +164,8 @@ def valid(epoch):
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
 
-            progress_bar(batch_idx, len(valloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-                         % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
+            loop.set_description(f"Epoch [{epoch}/{num_epochs}]")
+            loop.set_postfix(loss = loss.item(), acc=(100.*correct/total))
 
     # Save checkpoint.
     acc = 100.*correct/total
@@ -192,7 +194,8 @@ def test(epoch):
     correct = 0
     total = 0
     with torch.no_grad():
-        for batch_idx, (inputs, targets) in enumerate(testloader):
+        loop = tqdm(enumerate(testloader), total=len(testloader))
+        for batch_idx, (inputs, targets) in loop:
             inputs, targets = inputs.to(device), targets.to(device)
             outputs = net(inputs)
             loss = criterion(outputs, targets)
@@ -208,16 +211,14 @@ def test(epoch):
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
             
-            
-            progress_bar(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-                         % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
+            loop.set_description(f"Epoch [{epoch}/{num_epochs}]")
+            loop.set_postfix(loss = loss.item(), acc=(100.*correct/total))
+
     if draw == True:
         draw_conf(conf, checkpoint_name)
 
-#test(0)
-#print(conf)
 if args.resume:
-    test(0)
+    test(start_epoch-1)
 
 for epoch in range(start_epoch, start_epoch+300):
     train(epoch)
