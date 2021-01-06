@@ -34,9 +34,6 @@ class SleepDataset(Dataset):
             if img.mode == 'RGBA':
                 r,g,b,a = img.split()
                 img = Image.merge('RGB', (r,g,b))
-                #img = PIL.ImageOps.invert(img)
-            #else:
-                #img = PIL.ImageOps.invert(img)
 
             if self.inv:
                 img = PIL.ImageOps.invert(img)
