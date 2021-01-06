@@ -23,9 +23,6 @@ import numpy as np
 from pathlib import Path
 from etc import *
 
-sys.path.append('/home/eslab/wyh/Sleep-stage-classification/train/etc')
-sys.path.append('/home/eslab/wyh/Sleep-stage-classification/train/models')
-
 from SleepDataloader import *
 from util import *
 from resnet_dropout import *
