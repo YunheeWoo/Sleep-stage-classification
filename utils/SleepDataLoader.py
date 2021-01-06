@@ -15,26 +15,30 @@ from pathlib import Path
 
 class SleepDataset(Dataset):
 
-    def __init__(self, csv_file, root_dir, signals, color=None, transform=None):
+    def __init__(self, csv_file, root_dir, signals, inv=True, color=None, transform=None):
         self.samples = []
         self.root_dir = root_dir
         self.signals = signals
         self.color = color
         self.transform = transform
+        self.inv = inv
 
         self.__make_samples__(csv_file)
 
     def __loader__(self, path):
         with open(path, 'rb') as f:
             img = Image.open(f)
-            if not self.color == None:
+            if self.color == "L" or self.color == "RGB":
                 img = img.convert('L')
 
             if img.mode == 'RGBA':
                 r,g,b,a = img.split()
-                rgb_image = Image.merge('RGB', (r,g,b))
-                img = PIL.ImageOps.invert(rgb_image)
-            else:
+                img = Image.merge('RGB', (r,g,b))
+                #img = PIL.ImageOps.invert(img)
+            #else:
+                #img = PIL.ImageOps.invert(img)
+
+            if self.inv:
                 img = PIL.ImageOps.invert(img)
 
             return img
@@ -45,16 +49,26 @@ class SleepDataset(Dataset):
 
         img = self.__loader__(self.root_dir / self.signals[0] / self.samples[idx])
 
-        if not self.color == None:
+        if self.color == "L":
             dst = Image.new('L', (img.width, img.height * img_size))
+        elif self.color == "RGB":
+            dst = Image.new('L', (img.width, img.height))
         else:
             dst = Image.new('RGB', (img.width, img.height * img_size))
-        
-        dst.paste(img, (0, 0))
 
-        for signal in self.signals[1:]:
-            img = self.__loader__(self.root_dir / signal / self.samples[idx])
-            dst.paste(img, (0, img.height*self.signals.index(signal)))
+        if not self.color == "RGB":
+        
+            dst.paste(img, (0, 0))
+
+            for signal in self.signals[1:]:
+                img = self.__loader__(self.root_dir / signal / self.samples[idx])
+                dst.paste(img, (0, img.height*self.signals.index(signal)))
+        
+        else:
+            img2 = self.__loader__(self.root_dir / self.signals[1] / self.samples[idx])
+            img3 = self.__loader__(self.root_dir / self.signals[2] / self.samples[idx])
+
+            dst = Image.merge('RGB', (img,img2,img3))
 
         return dst
         

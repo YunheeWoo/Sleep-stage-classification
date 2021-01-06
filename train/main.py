@@ -43,28 +43,31 @@ args = parser.parse_args()
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 best_acc = 0  # best test accuracy
 start_epoch = 0  # start from epoch 0 or last checkpoint epoch
+draw = True
 
 data_path = Path('/home/eslab/wyh/data/')
 checkpoint_name = 'min-max-cut-2-resize-gray.pth'
 
+print(checkpoint_name)
+
 # Data
 print('==> Preparing data..')
 
-trainset = SleepDataset("/home/eslab/wyh/data/train.csv", Path("/home/eslab//wyh/data/img/2000x100/t-02/min-max-cut/"), ["C3-M2", "E1-M2", "E2-M1"], color="L",
+trainset = SleepDataset("/home/eslab/wyh/data/train.csv", Path("/home/eslab//wyh/data/img/2000x100/t-02/min-max-cut/"), ["C3-M2", "E1-M2", "E2-M1"], inv=True, color="L",
                             transform=transforms.Compose([
                                     transforms.Resize([224,224]),
                                     transforms.RandomHorizontalFlip(),
                                     transforms.ToTensor(), 
                                     transforms.Normalize(mean=[0.0044], std=[0.0396])]))
 
-testset = SleepDataset("/home/eslab/wyh/data/test.csv", Path("/home/eslab/wyh/data/img/2000x100/t-02/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], color="L",
+valset = SleepDataset("/home/eslab/wyh/data/val.csv", Path("/home/eslab/wyh/data/img/2000x100/t-02/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], inv=True, color="L",
                             transform=transforms.Compose([
                                     transforms.Resize([224,224]),
                                     transforms.RandomHorizontalFlip(),
                                     transforms.ToTensor(), 
                                     transforms.Normalize(mean=[0.0044], std=[0.0396])]))
 
-valset = SleepDataset("/home/eslab/wyh/data/val.csv", Path("/home/eslab/wyh/data/img/2000x100/t-02/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], color="L",
+testset = SleepDataset("/home/eslab/wyh/data/test.csv", Path("/home/eslab/wyh/data/img/2000x100/t-02/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], inv=True, color="L",
                             transform=transforms.Compose([
                                     transforms.Resize([224,224]),
                                     transforms.RandomHorizontalFlip(),
@@ -100,16 +103,16 @@ if args.resume:
 else:
     optimizer = optim.SGD(net.parameters(), lr=0.0001, momentum=0.9, weight_decay=1e-4)
 
-    scheduler = CosineAnnealingWarmupRestarts(optimizer, first_cycle_steps=50, cycle_mult=1.0, max_lr=0.1, min_lr=0.0001, warmup_steps=5, gamma=0.8)
+    scheduler = CosineAnnealingWarmupRestarts(optimizer, first_cycle_steps=30, cycle_mult=1.0, max_lr=0.1, min_lr=0.0001, warmup_steps=5, gamma=0.8)
     #scheduler = CosineAnnealingWarmUpRestarts(optimizer, T_0=50, T_mult=1, eta_max=0.1, T_up=5, gamma=0.8)
 
 #######
-model, optimizer = amp.initialize(model, optimizer, opt_level="O1")
+#model, optimizer = amp.initialize(model, optimizer, opt_level="O1")
 #######
 criterion = nn.CrossEntropyLoss()
 
 
-#conf = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]]
+conf = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]]
 
 
 # Training
@@ -125,10 +128,10 @@ def train(epoch):
         outputs = net(inputs)
         loss = criterion(outputs, targets)
         #####
-        with amp.scale_loss(loss, optimizer) as scaled_loss: 
-            scaled_loss.backward()
+        #with amp.scale_loss(loss, optimizer) as scaled_loss: 
+        #    scaled_loss.backward()
         #####
-        #loss.backward()
+        loss.backward()
 
         optimizer.step()
 
@@ -169,7 +172,7 @@ def valid(epoch):
         state = {
             'net': net.state_dict(),
             'acc': acc,
-            'epoch': epoch,
+            'epoch': epoch+1,
             'scheduler' : scheduler,
             'optimizer' : optimizer,
         }
@@ -177,10 +180,14 @@ def valid(epoch):
             os.mkdir('checkpoint')
         torch.save(state, './checkpoint/'+checkpoint_name)
         best_acc = acc
+        draw = True
+    else:
+        draw = False
 
 def test(epoch):
     global best_acc
     net.eval()
+    conf = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]]
     test_loss = 0
     correct = 0
     total = 0
@@ -192,21 +199,26 @@ def test(epoch):
             
             test_loss += loss.item()
             _, predicted = outputs.max(1)
-            """
+            
             item = predicted.to('cpu').numpy()
             ans = targets.to('cpu').numpy()
             for item_idx, c in enumerate(item):
                 conf[ans[item_idx]][item[item_idx]] += 1
-            """
+            
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
             
             
             progress_bar(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
                          % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
+    if draw == True:
+        draw_conf(conf, checkpoint_name)
 
 #test(0)
 #print(conf)
+if args.resume:
+    test(0)
+
 for epoch in range(start_epoch, start_epoch+300):
     train(epoch)
     valid(epoch)

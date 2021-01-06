@@ -4,6 +4,12 @@ import numpy as np
 from pathlib import Path
 import datetime
 import matplotlib.pyplot as plt
+import argparse
+
+parser = argparse.ArgumentParser(description='PyTorch Sleep Stage')
+parser.add_argument('--idx', type=int, help='index')
+parser.add_argument('--set', type=int, help='set')
+args = parser.parse_args()
 
 width = 2000
 height = 100
@@ -44,6 +50,7 @@ def draw_img(data, path, ann, width, height, norm):
             y_min = -abs(np.max(data))
             y_max = abs(np.max(data))
 
+    print(data.shape)
     data = np.reshape(data,(-1,6000))
     #annotation = np.load(annotation_path+file)
 
@@ -69,9 +76,12 @@ def draw_img(data, path, ann, width, height, norm):
         plt.clf()
         img_num += 1
 
-src_path = Path("/home/eslab/wyh/data/npy/original")
-dst_path = Path("/home/eslab/wyh/data/img/")
-ann_path = Path("/home/eslab/wyh/data/annotations")
+#src_path = Path("/home/eslab/wyh/data/npy/original")
+src_path = Path("/home/eslab/wyh/data/npy")
+#dst_path = Path("/home/eslab/wyh/data/img/")
+dst_path = Path("/home/eslab/wyh/data/")
+#ann_path = Path("/home/eslab/wyh/data/annotations")
+ann_path = Path("/home/eslab/wyh/data")
 
 allow_list = ["C3-M2", "E1-M2", "E2-M1"]
 
@@ -83,17 +93,23 @@ signal_list = ["EMG", "C3-M2", "C4-M1", "E1-M2", "E2-M1", "F3-M2", "F4-M1", "O1-
 patients = os.listdir(src_path)
 patients.sort()
 
-idx = 9
-threshold = 30
+patients = ["A2019-NX-01-1097_2_.npy"]
 
-for norm in normalization[:1]:
+idx = args.idx
+threshold = args.set
+
+for norm in normalization[3:4]:
     print("**************************" + norm + " start **************************")
     #for p in patients[idx*40+threshold:(idx+1)*40]:
-    for p in patients[idx*40+threshold:idx*40+threshold+10]:
+    for p in patients:
         print("===========" + p + " start ===========")
 
         datas = np.load(src_path / p)
         anns = np.load(ann_path / p)
+
+        print(datas.shape)
+        datas = np.reshape(datas,(9,-1,6000))
+        print(datas.shape)
 
         for sig_idx, signal in enumerate(signal_list):
             if not signal in allow_list:
