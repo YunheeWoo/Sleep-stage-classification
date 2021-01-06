@@ -1,3 +1,4 @@
 #folder
 train/checkpoint/*
-train/figures/*
+
+#train/figures/*
