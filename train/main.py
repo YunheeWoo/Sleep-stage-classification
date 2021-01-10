@@ -1,3 +1,9 @@
+import os, sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+from utils import *
+from lib import *
+
+"""
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -8,6 +14,7 @@ import torchvision
 import torchvision.transforms as transforms
 from torchvision.datasets import ImageFolder
 from torch.utils.data.sampler import SubsetRandomSampler
+"""
 
 from torch.optim.lr_scheduler import MultiStepLR 
 from torch.optim.lr_scheduler import StepLR
@@ -18,16 +25,18 @@ import argparse
 import sys
 
 from models import *
-from utils import progress_bar
+#from utils import progress_bar
 import numpy as np
 from pathlib import Path
-from etc import *
+#from etc import *
 
+"""
 from SleepDataloader import *
 from util import *
 from resnet_dropout import *
 from resnet import *
 from cosine_annearing_with_warmup import *
+"""
 
 #torch.backends.cudnn.enabled = False
 

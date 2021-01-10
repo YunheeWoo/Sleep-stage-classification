@@ -11,8 +11,8 @@ parser.add_argument('--idx', type=int, help='index')
 parser.add_argument('--set', type=int, help='set')
 args = parser.parse_args()
 
-width = 2000
-height = 100
+width = 1920
+height = 43
 
 def draw_img(data, path, ann, width, height, norm):
 
@@ -50,11 +50,10 @@ def draw_img(data, path, ann, width, height, norm):
             y_min = -abs(np.max(data))
             y_max = abs(np.max(data))
 
-    print(data.shape)
     data = np.reshape(data,(-1,6000))
     #annotation = np.load(annotation_path+file)
 
-    if not data.shape[0] == ann.shape[0]:
+    if not data.shape[0] == len(ann):
         print("data %d and annotation %d do not match" %(data.shape[0], ann.shape[0]))
         return
 
@@ -66,7 +65,7 @@ def draw_img(data, path, ann, width, height, norm):
         plt.xlim(0,6000)
         plt.box(on=None)
         plt.axis('off')
-        plt.tight_layout()
+        #plt.tight_layout()
         plt.subplots_adjust(left = 0, bottom = 0, right = 1, top = 1, hspace = 0, wspace = 0)
         plt.plot(data[d_idx], linewidth=0.2, color="black")
         img_name = str(img_num).zfill(4) + "_" + str(ann[d_idx]) + ".png"
@@ -76,14 +75,10 @@ def draw_img(data, path, ann, width, height, norm):
         plt.clf()
         img_num += 1
 
-#src_path = Path("/home/eslab/wyh/data/npy/original")
-src_path = Path("/home/eslab/wyh/data/npy")
-#dst_path = Path("/home/eslab/wyh/data/img/")
-dst_path = Path("/home/eslab/wyh/data/")
-#ann_path = Path("/home/eslab/wyh/data/annotations")
-ann_path = Path("/home/eslab/wyh/data")
+src_path = Path("/data/ssd1/dataset/Seoul_dataset/9channel_prefilter_butter/signals_dataloader/")
+dst_path = Path("/home/eslab/wyh/data/butter/")
 
-allow_list = ["C3-M2", "E1-M2", "E2-M1"]
+allow_list = ["EMG", "C3-M2", "C4-M1", "E1-M2", "E2-M1", "F3-M2", "F4-M1", "O1-M2", "O2-M1"]
 
 img_size = str(width) + "x" + str(height) + "/t-02"
 
@@ -96,18 +91,31 @@ patients.sort()
 idx = args.idx
 threshold = args.set
 
-for norm in normalization[3:4]:
+for norm in normalization[4:5]:
+    print(norm)
     print("**************************" + norm + " start **************************")
     #for p in patients[idx*40+threshold:(idx+1)*40]:
     for p in patients:
+
+        print("====load datas====")
+
+        split_list = os.listdir(src_path / p)
+
+        split_list.sort()
+
+        datas = np.load(src_path / p / split_list[0])
+
+        anns = [int(split_list[0][-5])]
+
+        for split in split_list[1:]:
+            datas = np.append(datas, np.load(src_path / p / split))
+            anns.append(split[-5])
+
+        print("====finish to concat datas====")
+
         print("===========" + p + " start ===========")
 
-        datas = np.load(src_path / p)
-        anns = np.load(ann_path / p)
-
-        #print(datas.shape)
-        #datas = np.reshape(datas,(9,-1,6000))
-        #print(datas.shape)
+        datas = np.reshape(datas,(9,-1))
 
         for sig_idx, signal in enumerate(signal_list):
             if not signal in allow_list:
@@ -118,9 +126,9 @@ for norm in normalization[3:4]:
             print("\t", end="")
             print(datetime.datetime.now())
 
-            os.makedirs(dst_path / img_size / norm / signal / p.split(".")[0], exist_ok=True)
+            os.makedirs(dst_path / img_size / norm / signal / p, exist_ok=True)
             
-            draw_img(datas[sig_idx], dst_path / img_size / norm / signal / p.split(".")[0], anns, width, height, norm)
+            draw_img(datas[sig_idx], dst_path / img_size / norm / signal / p, anns, width, height, norm)
 
             print("└─ " + signal + " end")
             print("\t", end="")

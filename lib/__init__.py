@@ -19,3 +19,6 @@ import numpy as np
 
 from pathlib import Path
 from tqdm import tqdm
+
+import mne
+import scipy.signal as sig
