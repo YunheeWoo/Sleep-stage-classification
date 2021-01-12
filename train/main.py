@@ -2,6 +2,7 @@ import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from utils import *
 from lib import *
+import random
 
 """
 import torch
@@ -30,6 +31,9 @@ import numpy as np
 from pathlib import Path
 #from etc import *
 
+np.random.seed(42)
+random.seed(42)
+
 """
 from SleepDataloader import *
 from util import *
@@ -52,39 +56,37 @@ start_epoch = 0  # start from epoch 0 or last checkpoint epoch
 draw = True
 
 data_path = Path('/home/eslab/wyh/data/')
-checkpoint_name = 'min-max-cut-2-resize-gray.pth'
+checkpoint_name = 'fix-nonflip-min-max-cut-2-resize-gray-inv.pth'
 
 print(checkpoint_name)
 
 # Data
 print('==> Preparing data..')
 
-trainset = SleepDataset("/home/eslab/wyh/data/train.csv", Path("/home/eslab//wyh/data/img/2000x100/t-02/min-max-cut/"), ["C3-M2", "E1-M2", "E2-M1"], inv=True, color="L",
+trainset = SleepDataset("/home/eslab/wyh/train.csv", Path("/home/eslab/wyh/data/img/butter/2000x100/t-02/mean-std-discard/"), ["C3-M2", "E1-M2", "E2-M1"], inv=False, color="L",
                             transform=transforms.Compose([
                                     transforms.Resize([224,224]),
-                                    transforms.RandomHorizontalFlip(),
+                                    #transforms.RandomHorizontalFlip(),
                                     transforms.ToTensor(), 
-                                    transforms.Normalize(mean=[0.0044], std=[0.0396])]))
+                                    transforms.Normalize(mean=[0.9955], std=[0.0396])]))
 
-valset = SleepDataset("/home/eslab/wyh/data/val.csv", Path("/home/eslab/wyh/data/img/2000x100/t-02/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], inv=True, color="L",
+valset = SleepDataset("/home/eslab/wyh/val.csv", Path("/home/eslab/wyh/data/img/butter/2000x100/t-02/mean-std-discard/"), ["C3-M2", "E1-M2", "E2-M1"], inv=False, color="L",
                             transform=transforms.Compose([
                                     transforms.Resize([224,224]),
-                                    transforms.RandomHorizontalFlip(),
                                     transforms.ToTensor(), 
-                                    transforms.Normalize(mean=[0.0044], std=[0.0396])]))
+                                    transforms.Normalize(mean=[0.9955], std=[0.0396])]))
 
-testset = SleepDataset("/home/eslab/wyh/data/test.csv", Path("/home/eslab/wyh/data/img/2000x100/t-02/min-max-cut"), ["C3-M2", "E1-M2", "E2-M1"], inv=True, color="L",
+testset = SleepDataset("/home/eslab/wyh/test.csv", Path("/home/eslab/wyh/data/img/butter/2000x100/t-02/mean-std-discard/"), ["E1-M2", "E2-M1", "C3-M2"], inv=False, color="L",
                             transform=transforms.Compose([
                                     transforms.Resize([224,224]),
-                                    transforms.RandomHorizontalFlip(),
                                     transforms.ToTensor(), 
-                                    transforms.Normalize(mean=[0.0044], std=[0.0396])]))
+                                    transforms.Normalize(mean=[0.9955], std=[0.0396])]))
 
 batch_size = 32
 
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=5)
-testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle=True, num_workers=5)
-valloader = torch.utils.data.DataLoader(valset, batch_size=batch_size, shuffle=True, num_workers=5)
+trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=8)
+testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle=True, num_workers=8)
+valloader = torch.utils.data.DataLoader(valset, batch_size=batch_size, shuffle=True, num_workers=8)
 
 # Model
 print('==> Building model..')
@@ -101,16 +103,19 @@ if args.resume:
     print('==> Resuming from checkpoint..')
     assert os.path.isdir('checkpoint'), 'Error: no checkpoint directory found!'
     checkpoint = torch.load('./checkpoint/'+checkpoint_name)
+    #print(checkpoint)
     net.load_state_dict(checkpoint['net'])
     best_acc = checkpoint['acc']
     start_epoch = checkpoint['epoch']
     scheduler = checkpoint['scheduler']
     optimizer = checkpoint['optimizer']
+    print("best acc: %lf" %(best_acc))
 else:
-    optimizer = optim.SGD(net.parameters(), lr=0.0001, momentum=0.9, weight_decay=1e-4)
+    optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9, weight_decay=1e-4)
 
     scheduler = CosineAnnealingWarmupRestarts(optimizer, first_cycle_steps=30, cycle_mult=1.0, max_lr=0.1, min_lr=0.0001, warmup_steps=5, gamma=0.8)
-    #scheduler = CosineAnnealingWarmUpRestarts(optimizer, T_0=50, T_mult=1, eta_max=0.1, T_up=5, gamma=0.8)
+    #optimizer = optim.SGD(net.parameters(), lr=0.1, momentum=0.9, weight_decay=5e-4)
+    #scheduler = MultiStepLR(optimizer, milestones=[10,20], gamma=0.1)
 
 #######
 #model, optimizer = amp.initialize(model, optimizer, opt_level="O1")
@@ -147,10 +152,8 @@ def train(epoch):
         total += targets.size(0)
         correct += predicted.eq(targets).sum().item()
 
-        loop.set_description(f"Epoch [{epoch}/{num_epochs}]")
+        loop.set_description(f"Epoch [{epoch}/{300}]")
         loop.set_postfix(loss = loss.item(), acc=(100.*correct/total))
-    
-
 
 def valid(epoch):
     global best_acc
@@ -170,7 +173,7 @@ def valid(epoch):
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
 
-            loop.set_description(f"Epoch [{epoch}/{num_epochs}]")
+            loop.set_description(f"Epoch [{epoch}/{300}]")
             loop.set_postfix(loss = loss.item(), acc=(100.*correct/total))
 
     # Save checkpoint.
@@ -183,6 +186,7 @@ def valid(epoch):
             'epoch': epoch+1,
             'scheduler' : scheduler,
             'optimizer' : optimizer,
+            #'optimizer': optimizer.state_dict(),
         }
         if not os.path.isdir('checkpoint'):
             os.mkdir('checkpoint')
@@ -208,20 +212,21 @@ def test(epoch):
             
             test_loss += loss.item()
             _, predicted = outputs.max(1)
+            total += targets.size(0)
+            correct += predicted.eq(targets).sum().item()
             
             item = predicted.to('cpu').numpy()
             ans = targets.to('cpu').numpy()
             for item_idx, c in enumerate(item):
                 conf[ans[item_idx]][item[item_idx]] += 1
-            
-            total += targets.size(0)
-            correct += predicted.eq(targets).sum().item()
-            
-            loop.set_description(f"Epoch [{epoch}/{num_epochs}]")
+
+            loop.set_description(f"Epoch [{epoch}/{300}]")
             loop.set_postfix(loss = loss.item(), acc=(100.*correct/total))
 
     if draw == True:
         draw_conf(conf, checkpoint_name)
+        
+    print(conf)
 
 if args.resume:
     test(start_epoch-1)
