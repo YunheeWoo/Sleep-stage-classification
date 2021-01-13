@@ -88,6 +88,6 @@ class SleepDataset(Dataset):
         return sample, target
 
 
-dataset = SleepDataset("/home/eslab/wyh/test.csv", Path("/home/eslab/wyh/data/img/butter/2000x100/t-02/mean-std-discard"), ["C3-M2", "E1-M2", "E2-M1"])
+#dataset = SleepDataset("/home/eslab/wyh/test.csv", Path("/home/eslab/wyh/data/img/butter/2000x100/t-02/mean-std-discard"), ["C3-M2", "E1-M2", "E2-M1"])
 
-print(len(dataset))
+#print(len(dataset))
