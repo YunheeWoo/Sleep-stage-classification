@@ -1,23 +1,13 @@
 import os
-import torch
 import pandas as pd
 from skimage import io, transform
 import numpy as np
 import matplotlib.pyplot as plt
-from torch.utils.data import Dataset, DataLoader
-from torchvision import transforms, utils
-from torchvision.datasets import ImageFolder
 from PIL import Image
 import csv
 from typing import Any, Callable, TypeVar, Generic, Sequence, List, Optional, Tuple
-
-import torch.nn as nn
-from torchvision.datasets import ImageFolder 
-import torchvision.transforms as transforms
-import torch
 import matplotlib.pyplot as plt
 import numpy as np
-from torch.utils.data.sampler import SubsetRandomSampler
 import time
 import sys
 import pandas as pd
@@ -144,25 +134,27 @@ def draw_conf(cm, pth):
     rec = plot_confusion_matrix(cm, pth, option='recall')
     _ = plot_confusion_matrix(cm, pth)
 
+    #print_scores(cm, pth)
+
     #print(2*(np.array(rec)*np.array(pre))/(np.array(rec)+np.array(pre))*100)
 
-    """
+def print_scores(cm, pth):
+    f = open(pth + "_scores.txt", 'w')
+
     y_true, y_pred = get_balanced_list(cm)
-    print("acc")
-    print("%.4lf" %accuracy_score(y_true, y_pred))
-    print("bal_acc")
-    print("%.4lf" %balanced_accuracy_score(y_true, y_pred))
-    print("f1")
-    print(f1_score(y_true, y_pred))
-    print("f1_macro")
-    print("%.4lf" %f1_score(y_true, y_pred, average='macro'))
-    #print("f1_micro")
-    #print("%.4lf" %f1_score(y_true, y_pred, average='micro'))
-    #print("f1_weighted")
-    #print("%.4lf" %f1_score(y_true, y_pred, average='weighted'))
-    print("cohen kappa")
-    print("%.4lf" %cohen_kappa_score(y_true, y_pred))
-    """
+    f.write("- acc")
+    f.write("%.2lf" %accuracy_score(y_true, y_pred)*100)
+    f.write("- bal_acc")
+    f.write("%.2lf" %balanced_accuracy_score(y_true, y_pred)*100)
+    f.write("- f1")
+    f.write(f1_score(y_true, y_pred, average='None')*100)
+    f.write("- f1_macro")
+    f.write("%.2lf" %f1_score(y_true, y_pred, average='macro')*100)
+    f.write("- cohen kappa")
+    f.write("%.2lf" %cohen_kappa_score(y_true, y_pred)*100)
+
+    f.close()
+    
 
 def count_labels(csv_file, path):
     lst = csv2list(csv_file)

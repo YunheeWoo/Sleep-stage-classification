@@ -56,27 +56,27 @@ start_epoch = 0  # start from epoch 0 or last checkpoint epoch
 draw = True
 
 data_path = Path('/home/eslab/wyh/data/')
-checkpoint_name = 'fix-nonflip-min-max-cut-2-gray.pth'
+checkpoint_name = 'shuffle-nonflip-mean-std-discard-3-gray.pth'
 
 print(checkpoint_name)
 
 # Data
 print('==> Preparing data..')
 
-trainset = SleepDataset("/home/eslab/wyh/train.csv", Path("/home/eslab/wyh/data/img/butter/2000x100/t-02/mean-std-discard/"), ["C3-M2", "E1-M2", "E2-M1"], inv=True, color="L",
+trainset = SleepDataset("/home/eslab/wyh/train.csv", Path("/home/eslab/wyh/data/img/butter/2000x100/t-02/mean-std-discard/"), ["C3-M2", "E1-M2", "E2-M1"], inv=True, color="L", shuffle=True,
                             transform=transforms.Compose([
                                     #transforms.Resize([224,224]),
                                     #transforms.RandomHorizontalFlip(),
                                     transforms.ToTensor(), 
                                     transforms.Normalize(mean=[0.0044], std=[0.0396])]))
 
-valset = SleepDataset("/home/eslab/wyh/val.csv", Path("/home/eslab/wyh/data/img/butter/2000x100/t-02/mean-std-discard/"), ["C3-M2", "E1-M2", "E2-M1"], inv=True, color="L",
+valset = SleepDataset("/home/eslab/wyh/val.csv", Path("/home/eslab/wyh/data/img/butter/2000x100/t-02/mean-std-discard/"), ["C3-M2", "E1-M2", "E2-M1"], inv=True, color="L", shuffle=True,
                             transform=transforms.Compose([
                                     #transforms.Resize([224,224]),
                                     transforms.ToTensor(), 
                                     transforms.Normalize(mean=[0.0044], std=[0.0396])]))
 
-testset = SleepDataset("/home/eslab/wyh/test.csv", Path("/home/eslab/wyh/data/img/butter/2000x100/t-02/mean-std-discard/"), ["C3-M2", "E1-M2", "E2-M1"], inv=True, color="L",
+testset = SleepDataset("/home/eslab/wyh/test.csv", Path("/home/eslab/wyh/data/img/butter/2000x100/t-02/mean-std-discard/"), ["C3-M2", "E1-M2", "E2-M1"], inv=True, color="L", shuffle=True,
                             transform=transforms.Compose([
                                     #transforms.Resize([224,224]),
                                     transforms.ToTensor(), 
@@ -153,7 +153,7 @@ def train(epoch):
         correct += predicted.eq(targets).sum().item()
 
         loop.set_description(f"Epoch [{epoch}/{300}]")
-        loop.set_postfix(loss = train_loss, acc=(100.*correct/total))
+        loop.set_postfix(loss = train_loss/total, acc=(100.*correct/total))
 
 def valid(epoch):
     global best_acc
@@ -174,7 +174,7 @@ def valid(epoch):
             correct += predicted.eq(targets).sum().item()
 
             loop.set_description(f"Epoch [{epoch}/{300}]")
-            loop.set_postfix(loss = valid_loss, acc=(100.*correct/total))
+            loop.set_postfix(loss = valid_loss/total, acc=(100.*correct/total))
 
     # Save checkpoint.
     acc = 100.*correct/total
@@ -221,7 +221,7 @@ def test(epoch):
                 conf[ans[item_idx]][item[item_idx]] += 1
 
             loop.set_description(f"Epoch [{epoch}/{300}]")
-            loop.set_postfix(loss = test_loss, acc=(100.*correct/total))
+            loop.set_postfix(loss = test_loss/total, acc=(100.*correct/total))
 
     if draw == True:
         draw_conf(conf, checkpoint_name)
