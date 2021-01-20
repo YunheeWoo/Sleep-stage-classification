@@ -56,33 +56,33 @@ start_epoch = 0  # start from epoch 0 or last checkpoint epoch
 draw = True
 
 data_path = Path('/home/eslab/wyh/data/')
-checkpoint_name = 'shuffle-nonflip-mean-std-discard-3-gray.pth'
+checkpoint_name = 'resnet18-fix-nonflip-mean-std-discard-7-resize-gray-full.pth'
 
 print(checkpoint_name)
 
 # Data
 print('==> Preparing data..')
 
-trainset = SleepDataset("/home/eslab/wyh/train.csv", Path("/home/eslab/wyh/data/img/butter/2000x100/t-02/mean-std-discard/"), ["C3-M2", "E1-M2", "E2-M1"], inv=True, color="L", shuffle=True,
+trainset = SleepDataset("/home/eslab/wyh/train_full.csv", Path("/home/eslab/wyh/data/img/2000x100/t-02/mean-std-discard/"), ["C3-M2", "C4-M1", "O1-M2", "O2-M1", "E1-M2", "E2-M1", "EMG"], inv=True, color="L", #shuffle=True,
                             transform=transforms.Compose([
-                                    #transforms.Resize([224,224]),
+                                    transforms.Resize([224,224]),
                                     #transforms.RandomHorizontalFlip(),
                                     transforms.ToTensor(), 
                                     transforms.Normalize(mean=[0.0044], std=[0.0396])]))
 
-valset = SleepDataset("/home/eslab/wyh/val.csv", Path("/home/eslab/wyh/data/img/butter/2000x100/t-02/mean-std-discard/"), ["C3-M2", "E1-M2", "E2-M1"], inv=True, color="L", shuffle=True,
+valset = SleepDataset("/home/eslab/wyh/val_full.csv", Path("/home/eslab/wyh/data/img/2000x100/t-02/mean-std-discard/"), ["C3-M2", "C4-M1", "O1-M2", "O2-M1", "E1-M2", "E2-M1", "EMG"], inv=True, color="L", #shuffle=True,
                             transform=transforms.Compose([
-                                    #transforms.Resize([224,224]),
+                                    transforms.Resize([224,224]),
                                     transforms.ToTensor(), 
                                     transforms.Normalize(mean=[0.0044], std=[0.0396])]))
 
-testset = SleepDataset("/home/eslab/wyh/test.csv", Path("/home/eslab/wyh/data/img/butter/2000x100/t-02/mean-std-discard/"), ["C3-M2", "E1-M2", "E2-M1"], inv=True, color="L", shuffle=True,
+testset = SleepDataset("/home/eslab/wyh/test_full.csv", Path("/home/eslab/wyh/data/img/2000x100/t-02/mean-std-discard/"), ["C3-M2", "C4-M1", "O1-M2", "O2-M1", "E1-M2", "E2-M1", "EMG"], inv=True, color="L", #shuffle=True,
                             transform=transforms.Compose([
-                                    #transforms.Resize([224,224]),
+                                    transforms.Resize([224,224]),
                                     transforms.ToTensor(), 
                                     transforms.Normalize(mean=[0.0044], std=[0.0396])]))
 
-batch_size = 32
+batch_size = 256
 
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=8)
 testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle=True, num_workers=8)
@@ -92,7 +92,7 @@ valloader = torch.utils.data.DataLoader(valset, batch_size=batch_size, shuffle=T
 print('==> Building model..')
 #net = torch.hub.load('pytorch/vision', 'resnet50', pretrained=False)
 #net.fc = nn.Linear(2048,5)
-net = resnet50_grayscale()
+net = resnet18_grayscale()
 net = net.to(device)
 if device == 'cuda':
     net = torch.nn.DataParallel(net)
@@ -227,11 +227,11 @@ def test(epoch):
         draw_conf(conf, checkpoint_name)
         print(conf)
 
-if args.resume:
-    test(start_epoch-1)
+#if args.resume:
+#    test(start_epoch-1)
 
 for epoch in range(start_epoch, start_epoch+300):
     train(epoch)
     valid(epoch)
-    test(epoch)
+    #test(epoch)
     scheduler.step()

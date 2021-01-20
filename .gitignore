@@ -2,3 +2,19 @@
 train/checkpoint/*
 
 train/figures/*
+
+train/cam_main.py
+
+train/grad_cam.py
+
+train/samples
+
+train/results
+
+train/*ipynb
+
+train/txt
+
+Sample_img
+
+train/*png

@@ -105,7 +105,28 @@ class SleepDataset(Dataset):
 
         return sample, target
 
-
-#dataset = SleepDataset("/home/eslab/wyh/test.csv", Path("/home/eslab/wyh/data/img/butter/2000x100/t-02/mean-std-discard"), ["C3-M2", "E1-M2", "E2-M1"])
+"""
+dataset = SleepDataset("/home/eslab/wyh/test.csv", Path("/home/eslab/wyh/data/img/butter/2000x100/t-02/mean-std-discard"), ["C3-M2", "E1-M2", "E2-M1"], color='L', inv=True)
 
 #print(len(dataset))
+cnt = 0
+
+clss = 4
+
+temp = [300, 900, 1800, 3600, 4800]
+
+for d in dataset:
+    if d[1] == clss:
+        cnt += 1
+        if cnt in temp:
+            d[0].save(str(clss)+"_"+str(cnt)+".png")
+            
+            if cnt == temp[-1]:
+                break
+
+"""
+
+#dataset =  SleepDataset("/home/eslab/wyh/test_full.csv", Path("/data/hdd1/dataset/Seoul_image/700x100/t-02/mean-std-discard/"), ["C3-M2", "C4-M1", "O1-M2", "O2-M1", "E1-M2", "E2-M1", "EMG"], inv=True, color="L")
+
+#print(dataset[0][0])
+#dataset[0][0].save("test.png")
