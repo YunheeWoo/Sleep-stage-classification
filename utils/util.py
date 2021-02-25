@@ -179,6 +179,6 @@ def count_severity(csv_file):
     print(labels)
 
 
-#count_labels("/home/eslab/wyh/data/val.csv", "/home/eslab/wyh/data/img/fail/min-max-cut/EMG/")
+#count_labels("/home/eslab/wyh/train_full.csv", "/home/eslab/wyh/data/img/resize/2000x100-224x32/t-05/mean-std-discard/EMG/")
 
-#count_severity("/home/eslab/wyh/data/train.csv")
+#count_severity("/home/eslab/wyh/train_full.csv")
