@@ -1,11 +1,15 @@
 #folder
 train/checkpoint/*
 
-train/figures/*
+train/figures
+
+train/logs
 
 train/cam_main.py
 
 train/grad_cam.py
+
+train/main_ensemble.py
 
 train/samples
 
@@ -18,3 +22,5 @@ train/txt
 Sample_img
 
 train/*png
+
+tools
