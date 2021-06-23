@@ -24,17 +24,20 @@ def draw_img(data, path, ann, width, height, norm):
     if "cut" in norm:
         dic = {"C3-M2":2.50E-05, "C4-M1":2.50E-05, "O1-M2":2.50E-05, "O2-M1":2.50E-05, "E1-M2":3.50E-05, "E2-M1":3.50E-05, "EMG":2.50E-05, "ECG":0.0005, "Flow":1.5, "Thorax":0.000125, "Abdomen":0.000125}
         #cut_value = 192*1e-06
-        #cut_value = 2.5e-05    # C3-M2, C4-M2, O1-M2, O2-M1, EMG
+        cut_value = 2.5e-05    # C3-M2, C4-M1, O1-M2, O2-M1, EMG
         #cut_value = 3.5e-05    # E1-M2, E2-M1
-        cut_value = 0.0005     # ECG
+        #cut_value = 0.0005     # ECG
         #cut_value = 1.5         # Flow
-        #cut_value = 0.000125   # Thorex, Abdomen
+        #cut_value = 0.000125   # Thorax, Abdomen
+
+        #cut_value = 2.5e-05
+        
         data = np.where(data < -cut_value, -cut_value, data)
         data = np.where(data > cut_value, cut_value, data)
         
     if "discard" in norm:
-        m = 7
-        #m = 3.5
+        #m = 7
+        m = 3.5
         #m = 2
         print(m * np.std(data))
         idx1 = (data - np.mean(data)) > m * np.std(data)
@@ -96,18 +99,26 @@ def makeimg(patients):
     print(patients)
 
     #src_path = Path("/data/hdd1/dataset/Seoul_dataset/9channel_prefilter_butter/signals_200Hz/")
-    src_path = Path("/data/hdd2/dataset/Seoul_dataset/9channel_prefilter_butter/signals_200Hz/")
-    dst_path = Path("/data/ssd2/img_test/")
-    ann_path = Path("/data/hdd1/dataset/Seoul_dataset/annotations/")
+    #src_path = Path("/data/hdd2/dataset/Seoul_dataset_new/9channel_prefilter_butter/signals_200Hz/")
+    src_path = Path("/home/eslab/wyh/")
+    #dst_path = Path("/data/ssd2/img/")
+    dst_path = Path("/home/eslab/wyh/data/test")
+    ann_path = Path("/data/hdd2/dataset/Seoul_dataset_new/annotations/")
+    #ann_path = Path("/data/hdd1/dataset/Hallym_dataset_notch/annotations/")
 
-    allow_list = ["ECG"]
-    #allow_list = ["EMG"]
+    #allow_list = ["Abdomen","Chest"]
+    allow_list = ["O2-M1"]
 
     img_size = str(width) + "x" + str(height) + "/t-02"
 
     normalization = ["min-max-cut", "mean-std-cut", "min-max-discard", "mean-std-discard", "original", "min-max", "mean-std"]
-    signal_list = ["EMG", "C3-M2", "C4-M1", "E1-M2", "E2-M1", "ECG", "F3-M2", "F4-M1", "Flow", "O1-M2", "O2-M1"]
+    #signal_list = ["EMG", "C3-M2", "C4-M1", "E1-M2", "E2-M1", "ECG", "F3-M2", "F4-M1", "Flow", "O1-M2", "O2-M1"]
+    #signal_list = ["EMG", "C3-M2", "C4-M1", "E1-M2", "E2-M1", "ECG", "Flow", "O1-M2", "O2-M1"]
     #signal_list = ["Abdomen","Chest"]
+
+    signal_list = ["O2-M1"]
+
+
 
     for norm in normalization[1:2]:
     #for norm in normalization[4:5]: # original
@@ -116,6 +127,10 @@ def makeimg(patients):
 
         datas = np.load(src_path / patients)
         anns = np.load(ann_path / patients)
+
+        print("=======")
+        print(datas.shape)
+        print(anns.shape)
 
         for sig_idx, signal in enumerate(signal_list):
             if not signal in allow_list:
@@ -135,17 +150,18 @@ def makeimg(patients):
             print(datetime.datetime.now())
 
 if __name__ == '__main__':
-    src_path = Path("/data/hdd2/dataset/Seoul_dataset/9channel_prefilter_butter/signals_200Hz/")
+    #src_path = Path("/data/hdd2/dataset/Seoul_dataset_new/9channel_prefilter_butter/signals_200Hz/")
+    src_path = Path("/home/eslab/wyh/")
     patients = os.listdir(src_path)
-    patients_pre = ['A2019-NX-01-0384_1_.npy', 'A2019-NX-01-0614_3_.npy', 'A2019-NX-01-0917_3_.npy']
-    patients = [item for item in patients if item not in patients_pre]
-    #patients = ['A2019-NX-01-0020_3_.npy', 'A2019-NX-01-0180_3_.npy', 'A2019-NX-01-0200_3_.npy', 'A2019-NX-01-0678_3_.npy']
+    #patients_pre = ['A2019-NX-01-0384_1_.npy', 'A2019-NX-01-0614_3_.npy', 'A2019-NX-01-0917_3_.npy']
+    #patients = [item for item in patients if item not in patients_pre]
+    patients = ['A2019-NX-01-0006_3_.npy']
     patients.sort()
 
     print(len(patients))
 
     pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
-    #pool = multiprocessing.Pool(processes=20)
+    #pool = multiprocessing.Pool(processes=10)
     pool.map(makeimg, patients)
     pool.close
     pool.join

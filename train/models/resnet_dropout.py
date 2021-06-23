@@ -311,7 +311,7 @@ class ResNet_dropout_grayscale(nn.Module):
         #self.fc1 = nn.Linear(512 * block.expansion, 64 * block.expansion)
         #self.fc2 = nn.Linear(64 * block.expansion, num_classes)
         self.dropout = nn.Dropout(p=0.2)
-
+        print("test")
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')

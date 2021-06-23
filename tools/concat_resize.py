@@ -12,14 +12,17 @@ import PIL.ImageOps
 def img_resize(path):
 
     #src_path = Path("/data/hdd1/dataset/Seoul_image/2000x100/t-02/mean-std-discard/")
-    src_path = Path("/data/ssd2/img_test/1920x83/t-02/mean-std-cut/")
-    src_path2 = Path("/data/ssd2/img_test/1920x249/t-02/mean-std-cut/Flow/")
+    #src_path = Path("/data/ssd2/img/1920x83/t-02/mean-std-cut/")
+    src_path2 = Path("/home/eslab/wyh/data/test/1920x249/t-02/mean-std-cut/Flow/")
+
     
     #src_path = Path("/home/eslab/wyh/data/img/2000x100/t-02/mean-std-discard/")
-    dst_path = Path("/home/eslab/wyh/data/img/original/1920x1080/t-02/mean-std-cut")
+
+    src_path = Path("/home/eslab/wyh/data/test/1920x83/t-02/mean-std-cut/")
+    dst_path = Path("/home/eslab/wyh/data/test/concat/")
 
     signals = ["C3-M2", "C4-M1", "O1-M2", "O2-M1", "E1-M2", "E2-M1", "EMG", "ECG", "Flow", "Chest", "Abdomen"]
-    #signals = ["C3-M2", "C4-M1", "O1-M2", "O2-M1", "E1-M2", "E2-M1", "EMG"]
+    #signals = ["C3-M2", "C4-M1", "O1-M2", "O2-M1", "E1-M2", "E2-M1", "EMG", "ECG"]
     #signals = ["C3-M2", "C4-M1", "O1-M2", "O2-M1", "E1-M2", "E2-M1"]
     #signals = ["C3-M2", "C4-M1", "O1-M2", "O2-M1"]
 
@@ -86,8 +89,13 @@ def img_resize(path):
 
 if __name__ == '__main__':
     #src_path = Path("/data/ssd1/img/2000x100/t-05/mean-std-discard")
-    src_path = Path("/data/ssd2/img_test/1920x83/t-02/mean-std-cut/")
+    src_path = Path("/data/ssd2/img/1920x83/t-02/mean-std-cut/")
     dst_path = Path("/home/eslab/wyh/data/img/original/1920x1080/t-02/mean-std-cut")
+
+
+    src_path = Path("/home/eslab/wyh/data/test/1920x83/t-02/mean-std-cut/")
+    dst_path = Path("/home/eslab/wyh/data/test/concat/")
+
     signals = os.listdir(src_path)
 
     signals.sort()
@@ -99,8 +107,8 @@ if __name__ == '__main__':
 
     patient = os.listdir(src_path / signals[0])
 
-    patients_pre = ['A2019-NX-01-0384_1_.npy', 'A2019-NX-01-0614_3_.npy', 'A2019-NX-01-0917_3_.npy']
-    patient = [item for item in patient if item not in patients_pre]
+    #patients_pre = ['A2019-NX-01-0384_1_.npy', 'A2019-NX-01-0614_3_.npy', 'A2019-NX-01-0917_3_.npy']
+    #patient = [item for item in patient if item not in patients_pre]
 
     patient.sort()
 

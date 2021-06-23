@@ -158,8 +158,8 @@ def ellip_filter_sos(signals,rp=6,rs=53, lowcut=None, highcut=None, fs = 200 , o
     return filtered
 
 def check_dataset_thread(filename):
-    signals_save_path = '/mnt/ssd1/dataset/Seoul_dataset/9channel_prefilter/signals/'
-    annotations_save_path = '/mnt/ssd1/dataset/Seoul_dataset/9channel_prefilter/annotations/'
+    signals_save_path = ''
+    annotations_save_path = ''
 
     signals = np.load(signals_save_path+filename)
     annotations = np.load(annotations_save_path+filename)
@@ -176,11 +176,8 @@ def my_thread(file_list):
     signals_path = file_list[0]
     annotations_path = file_list[1]
     
-    signals_mne_save_path = '/data/hdd2/dataset/Seoul_dataset/9channel_prefilter_mne/signals/'
-    # signals_sos_save_path = '/mnt/hdd1/dataset/Seoul_dataset/9channel_prefilter_sos/signals/'
-    signals_butter_save_path = '/data/hdd2/dataset/Seoul_dataset/9channel_prefilter_butter/signals/'
-    signals_ellip_save_path = '/data/hdd2/dataset/Seoul_dataset/9channel_prefilter_ellip/signals/'
-    annotations_save_path = '/data/hdd2/dataset/Seoul_dataset/annotations/'
+    signals_butter_save_path = '/data/hdd2/dataset/Seoul_dataset_new/9channel_prefilter_butter/signals/'
+    annotations_save_path = '/data/hdd2/dataset/Seoul_dataset_new/annotations/'
 
     save_filename = '%s%s'%(signals_path.split('/')[-1].split('_')[0] , '.npy')
     # file_list = os.listdir(signals_save_path)
@@ -196,9 +193,11 @@ def my_thread(file_list):
     # else:
     print(signals_path)
     print(annotations_path)
-    #select_channel=['F3-M2','F4-M1','C3-M2','C4-M1','O1-M2','O2-M1','E1-M2','E2-M1','1-2','ECG','Flow']
+    sr = 25
+    #select_channel=["C3-M2", "C4-M1", "O1-M2", "O2-M1", "E1-M2", "E2-M1", "1-2", "ECG", "Flow"]
+    #select_channel=["Flow"]
     select_channel=['Chest','Abdomen']
-    eeg_channel = ['C3-M2', 'C4-M1', 'F4-M1', 'F3-M2', 'O2-M1', 'O1-M2']
+    eeg_channel = ['C3-M2', 'C4-M1', 'F3-M2', 'F4-M1','O1-M2','O2-M1']
     eog_channel = ['E1-M2', 'E2-M1']
     emg_channel = ['1-2']
     ecg_channel = ['ECG']
@@ -319,6 +318,9 @@ def my_thread(file_list):
         else:
             severity = 3
 
+        #dif_sec = 0
+        ####
+        
         # signals 시작 시간
         signals_start_time = info['startdate']
 
@@ -349,16 +351,17 @@ def my_thread(file_list):
         
         annotations_start_time = datetime.datetime.strptime(start_time, '%m/%d/%Y %H:%M:%S')
 
-        print(signals_start_time)
-        print(annotations_start_time)
+        #print(signals_start_time)
+        #print(annotations_start_time)
 
         dif_sec = annotations_start_time - signals_start_time  # annotations 시작 시간 - signals 시작 시간
 
-        print(dif_sec)
+        print(f"{signals_start_time}\n{annotations_start_time}\n{signals_path}\n dif_sec: {dif_sec}")
         
         dif_sec = int(str(dif_sec).split(':')[0]) * 3600 + int(str(dif_sec).split(':')[1]) * 60 + int(
             str(dif_sec).split(':')[2])
-
+        ####
+        
         # check channel
         count = 0
         order = 4
@@ -371,24 +374,14 @@ def my_thread(file_list):
                 print('select channel : ', signals_info['label'])
                 if signals_info['label'] in eeg_channel:
                     new_signals_pyedf = butter_bandpass_filter(signals=signals_pyedf[index].reshape(1,-1),lowcut=eeg_lowcut,highcut=eeg_highcut,fs=200,order=order,bandstop=60)
-                    # new_signals_pyedf_sos = butter_filter_sos(signals=signals_pyedf[index].reshape(1,-1), lowcut=eeg_lowcut, highcut=eeg_highcut, fs=200 , order =order)
-                    # new_signals_pyedf_ellip = ellip_filter_sos(signals=signals_pyedf[index].reshape(1,-1),rp=rp,rs=rs, lowcut=eeg_lowcut, highcut=eeg_highcut, fs = 200 , order = order)
                 elif signals_info['label'] in eog_channel:
                     new_signals_pyedf = butter_bandpass_filter(signals=signals_pyedf[index].reshape(1,-1),lowcut=eog_lowcut,highcut=eog_highcut,fs=200,order=order,bandstop=60)
-                    # new_signals_pyedf_sos = butter_filter_sos(signals=signals_pyedf[index].reshape(1,-1), lowcut=eog_lowcut, highcut=eog_highcut, fs=200 , order =order)
-                    # new_signals_pyedf_ellip = ellip_filter_sos(signals=signals_pyedf[index].reshape(1,-1),rp=rp,rs=rs ,lowcut=eog_lowcut, highcut=eog_highcut, fs = 200 , order = order)
                 elif signals_info['label'] in emg_channel:
                     new_signals_pyedf = butter_bandpass_filter(signals=signals_pyedf[index].reshape(1,-1),lowcut=emg_lowcut,highcut=emg_highcut,fs=200,order=order,bandstop=60)
-                    # new_signals_pyedf_sos = butter_filter_sos(signals=signals_pyedf[index].reshape(1,-1), lowcut=emg_lowcut, highcut=None, fs=200 , order =order)
-                    # new_signals_pyedf_ellip = ellip_filter_sos(signals=signals_pyedf[index].reshape(1,-1),rp=rp,rs=rs, lowcut=emg_lowcut, highcut=None, fs = 200 , order = order)
                 elif signals_info['label'] in ecg_channel:
                     new_signals_pyedf = butter_bandpass_filter(signals=signals_pyedf[index].reshape(1,-1),lowcut=ecg_lowcut,highcut=ecg_highcut,fs=200,order=order,bandstop=60)
-                    # new_signals_pyedf_sos = butter_filter_sos(signals=signals_pyedf[index].reshape(1,-1), lowcut=emg_lowcut, highcut=None, fs=200 , order =order)
-                    # new_signals_pyedf_ellip = ellip_filter_sos(signals=signals_pyedf[index].reshape(1,-1),rp=rp,rs=rs, lowcut=emg_lowcut, highcut=None, fs = 200 , order = order)
                 elif signals_info['label'] in flow_channel:
                     new_signals_pyedf = butter_highpass_filter(data=signals_pyedf[index].reshape(1,-1), cutoff=flow_lowcut, order=order,fs=200)
-                    # new_signals_pyedf_sos = butter_filter_sos(signals=signals_pyedf[index].reshape(1,-1), lowcut=emg_lowcut, highcut=None, fs=200 , order =order)
-                    # new_signals_pyedf_ellip = ellip_filter_sos(signals=signals_pyedf[index].reshape(1,-1),rp=rp,rs=rs, lowcut=emg_lowcut, highcut=None, fs = 200 , order = order)
                 elif signals_info['label'] in etc_channel:
                     # new_signals_pyedf = signals_pyedf[index].reshape(1,-1)
                     # new_signals_pyedf = butter_highpass_filter(data=signals_pyedf[index].reshape(1,-1), cutoff=etc_lowcut, order=order,fs=25)
@@ -448,7 +441,7 @@ def my_thread(file_list):
         # new_signals = signals[:][0]
 
         # print(new_signals.shape)
-        if new_signals_pyedf.shape[1] == 0 or new_signals_pyedf.shape[0] != 2:
+        if new_signals_pyedf.shape[1] == 0 or new_signals_pyedf.shape[0] != len(select_channel):
             print(new_signals_pyedf.shape)
             print('This file is fault!')
         else:
@@ -457,12 +450,12 @@ def my_thread(file_list):
 
                 # new_signals = new_signals[:, dif_sec * 200:]
                 ##new_signals_pyedf = new_signals_pyedf[:,dif_sec *200:]
-                new_signals_pyedf = new_signals_pyedf[:,dif_sec *25:]
+                new_signals_pyedf = new_signals_pyedf[:,dif_sec *sr:]
                 # new_signals_pyedf_sos = new_signals_pyedf_sos[:,dif_sec *200:]
                 # new_signals_pyedf_ellip = new_signals_pyedf_ellip[:,dif_sec *200:]
 
                 ##tail_dif_len = len(new_signals_pyedf[0]) - len(annotations_np) * 200 * 30
-                tail_dif_len = len(new_signals_pyedf[0]) - len(annotations_np) * 25 * 30
+                tail_dif_len = len(new_signals_pyedf[0]) - len(annotations_np) * sr * 30
 
                 print('tail dif : ', tail_dif_len)
 
@@ -473,13 +466,13 @@ def my_thread(file_list):
                     # new_signals_pyedf_ellip = new_signals_pyedf_ellip[:, :-tail_dif_len]
                     
                     ##print('signals len : ', len(new_signals_pyedf[0]) / 200 / 30)
-                    print('signals len : ', len(new_signals_pyedf[0]) / 25 / 30)
+                    print('signals len : ', len(new_signals_pyedf[0]) / sr / 30)
                     print('annotations len : ', len(annotations_np))
                 else:
                     ##signals_len = len(new_signals_pyedf[0]) // 30 // 200
-                    signals_len = len(new_signals_pyedf[0]) // 30 // 25
+                    signals_len = len(new_signals_pyedf[0]) // 30 // sr
                     ##signals_len = signals_len * 30 * 200
-                    signals_len = signals_len * 30 * 25
+                    signals_len = signals_len * 30 * sr
 
                     # new_signals = new_signals[:, :signals_len]
                     new_signals_pyedf = new_signals_pyedf[:, :signals_len]
@@ -487,19 +480,19 @@ def my_thread(file_list):
                     # new_signals_pyedf_ellip = new_signals_pyedf_ellip[:, :signals_len]
 
                     ##annotations_np = annotations_np[:len(new_signals_pyedf[0]) // 30 // 200]
-                    annotations_np = annotations_np[:len(new_signals_pyedf[0]) // 30 // 25]
+                    annotations_np = annotations_np[:len(new_signals_pyedf[0]) // 30 // sr]
                     ##print('signals len : ', len(new_signals_pyedf[0]) / 200 / 30)
-                    print('signals len : ', len(new_signals_pyedf[0]) / 25 / 30)
+                    print('signals len : ', len(new_signals_pyedf[0]) / sr / 30)
                     print('annotations len : ', len(annotations_np))
                 ##if len(new_signals_pyedf[0]) / 200 / 30 == len(annotations_np):
-                if len(new_signals_pyedf[0]) / 25 / 30 == len(annotations_np):
+                if len(new_signals_pyedf[0]) / sr / 30 == len(annotations_np):
                     print('Truth file')
                     print(new_signals_pyedf.shape)
                     print(annotations_np.shape)
                     print('signals_filename : %s ' % (
-                            signals_mne_save_path + signals_path.split('/')[-1].split('_')[0] + '_%d_.npy'%severity))
+                            signals_butter_save_path + signals_path.split('/')[-1].split('_')[0] + '_%d_.npy'%severity))
                     print('annotations_filename : %s' % (
-                            signals_mne_save_path + signals_path.split('/')[-1].split('_')[
+                            signals_butter_save_path + signals_path.split('/')[-1].split('_')[
                         0] + '_%d_.npy'%severity))
                     # signals
                     # np.save(signals_mne_save_path + signals_path.split('/')[-1].split('_')[0] + '_%d_.npy'%severity,
@@ -518,7 +511,7 @@ def my_thread(file_list):
                 print('Signals is longer than Annotations')
             else:
                 ##tail_dif_len = len(new_signals_pyedf[0]) - len(annotations_np) * 200 * 30
-                tail_dif_len = len(new_signals_pyedf[0]) - len(annotations_np) * 25 * 30
+                tail_dif_len = len(new_signals_pyedf[0]) - len(annotations_np) * sr * 30
 
                 print('tail dif : ', tail_dif_len)
 
@@ -529,13 +522,13 @@ def my_thread(file_list):
                     # new_signals_pyedf_ellip = new_signals_pyedf_ellip[:, :-tail_dif_len]
                     
                     ##print('signals len : ', len(new_signals_pyedf[0]) / 200 / 30)
-                    print('signals len : ', len(new_signals_pyedf[0]) / 25 / 30)
+                    print('signals len : ', len(new_signals_pyedf[0]) / sr / 30)
                     print('annotations len : ', len(annotations_np))
                 else:
                     ##signals_len = len(new_signals_pyedf[0]) // 30 // 200
-                    signals_len = len(new_signals_pyedf[0]) // 30 // 25
+                    signals_len = len(new_signals_pyedf[0]) // 30 // sr
                     ##signals_len = signals_len * 30 * 200
-                    signals_len = signals_len * 30 * 25
+                    signals_len = signals_len * 30 * sr
 
                     # new_signals = new_signals[:, :signals_len]
                     new_signals_pyedf = new_signals_pyedf[:, :signals_len]
@@ -543,19 +536,19 @@ def my_thread(file_list):
                     # new_signals_pyedf_ellip = new_signals_pyedf_ellip[:, :signals_len]
 
                     ##annotations_np = annotations_np[:len(new_signals_pyedf[0]) // 30 // 200]
-                    annotations_np = annotations_np[:len(new_signals_pyedf[0]) // 30 // 25]
+                    annotations_np = annotations_np[:len(new_signals_pyedf[0]) // 30 // sr]
                     ##print('signals len : ', len(new_signals_pyedf[0]) / 200 / 30)
-                    print('signals len : ', len(new_signals_pyedf[0]) / 25 / 30)
+                    print('signals len : ', len(new_signals_pyedf[0]) / sr / 30)
                     print('annotations len : ', len(annotations_np))
                 ##if len(new_signals_pyedf[0]) / 200 / 30 == len(annotations_np):
-                if len(new_signals_pyedf[0]) / 25 / 30 == len(annotations_np):
+                if len(new_signals_pyedf[0]) / sr / 30 == len(annotations_np):
                     print('Truth file')
                     print(new_signals_pyedf.shape)
                     print(annotations_np.shape)
                     print('signals_filename : %s ' % (
-                            signals_mne_save_path + signals_path.split('/')[-1].split('_')[0] + '_%d_.npy'%severity))
+                            signals_butter_save_path + signals_path.split('/')[-1].split('_')[0] + '_%d_.npy'%severity))
                     print('annotations_filename : %s' % (
-                            signals_mne_save_path + signals_path.split('/')[-1].split('_')[
+                            signals_butter_save_path + signals_path.split('/')[-1].split('_')[
                         0] + '_%d_.npy'%severity))
                     # signals
                     # np.save(signals_mne_save_path + signals_path.split('/')[-1].split('_')[0] + '_%d_.npy'%severity,
@@ -576,21 +569,34 @@ def make_edf_to_npy_usingmne(directory_path='/data/ssd1/dataset/seoul_nx_edf/'):
     annotations_list = []
     path_list = []
     cpu_num = multiprocessing.cpu_count()
-    signals_mne_save_path = '/data/hdd2/dataset/Seoul_dataset/9channel_prefilter_mne/signals/'
-    # signals_sos_save_path = '/mnt/hdd1/dataset/Seoul_dataset/9channel_prefilter_sos/signals/'
-    signals_butter_save_path = '/data/hdd2/dataset/Seoul_dataset/9channel_prefilter_butter/signals/'
-    signals_ellip_save_path = '/data/hdd2/dataset/Seoul_dataset/9channel_prefilter_ellip/signals/'
-    annotations_save_path = '/data/hdd2/dataset/Seoul_dataset/annotations/'
-    os.makedirs(signals_mne_save_path,exist_ok=True)
-    # os.makedirs(signals_sos_save_path,exist_ok=True)
+    signals_butter_save_path = '/data/hdd2/dataset/Seoul_dataset_new/9channel_prefilter_butter/signals/'
+    annotations_save_path = '/data/hdd2/dataset/Seoul_dataset_new/annotations'
     os.makedirs(signals_butter_save_path,exist_ok=True)
-    os.makedirs(signals_ellip_save_path,exist_ok=True)
     os.makedirs(annotations_save_path,exist_ok=True)
     print('cpu_num : ',cpu_num)
+
+    reject_lst = ["A2019-NX-01-1266_edf.edf",
+                "A2020-NX-01-0660_edf.edf",
+                "A2019-NX-01-0941_edf.edf",
+                "A2019-NX-01-1035_edf.edf",
+                "A2019-NX-01-0715_edf.edf",
+                "A2019-NX-01-1541_edf.edf",
+                "A2019-NX-01-1581_edf.edf",
+                "A2019-NX-01-0121_edf.edf",
+                "A2019-NX-01-1052_edf.edf",
+                "A2019-NX-01-0667_edf.edf",
+                "A2019-NX-01-1112_edf.edf",
+                "A2019-NX-01-1078_edf.edf",
+                "A2020-NX-01-0003_edf.edf",
+                "A2019-NX-01-0404_edf.edf",
+                "A2019-NX-01-0258_edf.edf"]
+    
     for (path, dir, files) in os.walk(directory_path):
         for filename in files:
             ext = os.path.splitext(filename)[-1]
             if ext == '.edf':
+                if filename in reject_lst:
+                    continue
                 signals_list.append('%s/%s' % (path, filename))
                 annotations_filename = filename[:-7] + 'event.csv'
                 if path.split('/')[-1] == '1. EDF':
@@ -598,21 +604,39 @@ def make_edf_to_npy_usingmne(directory_path='/data/ssd1/dataset/seoul_nx_edf/'):
                     annotations_list.append(annotations_path + annotations_filename)
                 else:
                     annotations_list.append('%s/%s'%(path,annotations_filename))
+    
+    """
+    for files in os.listdir("/data/ssd1/Hallym_edf/perfect_anns/"):
+        annotations_list.append("/data/ssd1/Hallym_edf/perfect_anns/" + files)
+    for files in os.listdir("/data/ssd1/Hallym_edf/signals/2019/"):
+        signals_list.append("/data/ssd1/Hallym_edf/signals/2019/" + files)
+    for files in os.listdir("/data/ssd1/Hallym_edf/signals/2020/"):
+        signals_list.append("/data/ssd1/Hallym_edf/signals/2020/" + files)
+    for files in os.listdir("/data/ssd1/Hallym_edf/signals/2021/"):
+        signals_list.append("/data/ssd1/Hallym_edf/signals/2021/" + files)
+    """
+    
+    annotations_list.sort()
+    signals_list.sort()
 
     cpu_num = multiprocessing.cpu_count()
-
+    # edf file : A2019-NX-01-0001_edf.edf
+    # ann file : A2019-NX-01-0001_event.csv
     for i in range(len(signals_list)):
-        path_list.append([signals_list[i], annotations_list[i]])
+        #path_list.append([signals_list[i], annotations_list[i]])
+        #ann_path = "/data/hdd2/dataset/Seoul_dataset_new/filled_empty_annotation/" + signals_list[i].split("/")[-1].split("_")[0] + ".csv"
+        ann_path = "/data/hdd2/dataset/Seoul_dataset_new/filled_empty_annotation/" + signals_list[i].split("/")[-1].split("_")[0] + "_event.csv"
+        path_list.append([signals_list[i], ann_path])
     print(len(path_list))
 
-    for i in range(len(path_list)):
-        if path_list[i][0].split('/')[-1].split('_')[0] != path_list[i][1].split('/')[-1].split('_')[0]:
-            print('This is fault')
+    #for i in range(len(path_list)):
+    #    if path_list[i][0].split('/')[-1].split('_')[0] != path_list[i][1].split('/')[-1].split('_')[0]:
+    #        print('This is fault')
         
     # my_thread(path_list[0])    
     start = time.time()
     pool = Pool(cpu_num)
-
+    #pool = Pool(1)
     pool.map(my_thread,path_list)
     pool.close()
     pool.join()
@@ -622,11 +646,11 @@ def make_edf_to_npy_usingmne(directory_path='/data/ssd1/dataset/seoul_nx_edf/'):
 
 def check_dataset_truth():
     cpu_num = multiprocessing.cpu_count()
-    signals_mne_save_path = '/mnt/ssd1/dataset/Seoul_dataset/9channel_prefilter_mne/signals/'
+    signals_mne_save_path = '/mnt/ssd1/dataset/Hallym_dataset/9channel_prefilter_mne/signals/'
     # signals_sos_save_path = '/mnt/ssd1/dataset/Seoul_dataset/9channel_prefilter_sos/signals/'
-    signals_butter_save_path = '/mnt/ssd1/dataset/Seoul_dataset/9channel_prefilter_butter/signals/'
-    signals_ellip_save_path = '/mnt/ssd1/dataset/Seoul_dataset/9channel_prefilter_ellip/signals/'
-    annotations_save_path = '/mnt/ssd1/dataset/Seoul_dataset/9channel_prefilter/annotations/'
+    signals_butter_save_path = '/mnt/ssd1/dataset/Hallym_dataset/9channel_prefilter_butter/signals/'
+    signals_ellip_save_path = '/mnt/ssd1/dataset/Hallym_dataset/9channel_prefilter_ellip/signals/'
+    annotations_save_path = '/mnt/ssd1/dataset/Hallym_dataset/9channel_prefilter/annotations/'
     file_list = os.listdir(signals_mne_save_path)
 
     
