@@ -36,31 +36,29 @@ class SleepDataLSTMset(Dataset):
     def __load_samples__(self, csv_file):
         dirs = csv2list(csv_file)
 
+        skip_list = ['A2019-NX-01-1064_3_', 'A2019-NX-01-0867_3_', 'A2019-NX-01-0581_3_', 'A2020-NX-01-0337_3_', '055_3_', 'A2019-NX-01-0154_3_', 'A2020-NX-01-0753_3_', 'A2019-NX-01-0437_2_', 'A2019-NX-01-1606_3_', 'A2019-NX-01-1331_3_', 'A2019-NX-01-1195_3_', '334_0_', 'A2019-NX-01-1128_3_', 'A2019-NX-01-1133_2_', 'A2019-NX-01-0299_3_', '252_1_', 'A2019-NX-01-0417_3_']
+        #skip_list = []
         """
         ##########
         dirs_temp = csv2list(csv_file)
         dirs = []
         for d in dirs_temp:
-            if int(d[0][-2]) == 0 or int(d[0][-2]) == 1:
+            #if int(d[0][-2]) == 0 or int(d[0][-2]) == 1:
             if int(d[0][-2]) == 2:
-            if int(d[0][-2]) == 3:
+            #if int(d[0][-2]) == 3:
                 dirs.append(d)
         ##########
         """
 
         for d in dirs:
+            if d[0] in skip_list:
+                continue
+
             imgs = os.listdir(self.root_dir / d[0])
 
             imgs.sort()
 
             # Add image name to list
-            """
-            for img in imgs[2:-2]:
-                self.samples.append(d[0] + '/' + img)
-
-            for img in imgs:
-                self.all_samples.append(d[0] + '/' + img)
-            """
 
             for img_idx, img in enumerate(imgs):
                 if img == imgs[0] or img == imgs[1] or img == imgs[-1] or img == imgs[-2]:
@@ -204,6 +202,7 @@ class SleepDataLSTMset(Dataset):
 
         img_width = width
 
+        """
         eeg = np.zeros((img_width,69))
         eeg.fill(0)
         eog = np.zeros((img_width,34))
@@ -229,10 +228,138 @@ class SleepDataLSTMset(Dataset):
         #print(type(np.max(sample)))
         test = test.T
         sample += test
+        """
+        """
+        eeg = np.zeros((img_width,71))
+        eeg.fill(0)
+        eog = np.zeros((img_width,23))
+        eog.fill(10)
+        emg = np.zeros((img_width,12))
+        emg.fill(20)
+        ecg = np.zeros((img_width,12))
+        ecg.fill(30)
+        flow = np.zeros((img_width,35))
+        flow.fill(40)
+        chest = np.zeros((img_width,12))
+        chest.fill(50)
+        abdomen = np.zeros((img_width,12))
+        abdomen.fill(60)
+        sat1 = np.zeros((img_width,23))
+        sat1.fill(70)
+        sat2 = np.zeros((img_width,24))
+        sat2.fill(70)
+        
+        test = np.concatenate((eeg, eog), axis=1)
+        test = np.concatenate((test, emg), axis=1)
+        test = np.concatenate((test, ecg), axis=1)
+        test = np.concatenate((test, flow), axis=1)
+        test = np.concatenate((test, chest), axis=1)
+        test = np.concatenate((test, abdomen), axis=1)
+        test = np.concatenate((test, sat1), axis=1)
+        test = np.concatenate((test, sat2), axis=1)
+        test = test.T
+        sample += test
+        """
+        """
+        eeg = np.zeros((img_width,81))
+        eeg.fill(0)
+        eog = np.zeros((img_width,40))
+        eog.fill(10)
+        emg = np.zeros((img_width,21))
+        emg.fill(20)
+        flow = np.zeros((img_width,20))
+        flow.fill(40)
+        chest = np.zeros((img_width,21))
+        chest.fill(50)
+        abdomen = np.zeros((img_width,20))
+        abdomen.fill(60)
+        sat = np.zeros((img_width,21))
+        sat.fill(50)
+        """
+        """
+        # new_14
+        eeg = np.zeros((img_width,78))
+        eeg.fill(0)
+        eog = np.zeros((img_width,26))
+        eog.fill(10)
+        emg = np.zeros((img_width,14))
+        emg.fill(20)
+        ecg = np.zeros((img_width,13))
+        ecg.fill(20)
+        flow = np.zeros((img_width,40))
+        flow.fill(40)
+        chest = np.zeros((img_width,13))
+        chest.fill(50)
+        abdomen = np.zeros((img_width,13))
+        abdomen.fill(60)
+        sat = np.zeros((img_width,27))
+        sat.fill(70)
+        """
+        # new_13
+        eeg = np.zeros((img_width,84))
+        eeg.fill(0)
+        eog = np.zeros((img_width,28))
+        eog.fill(10)
+        emg = np.zeros((img_width,14))
+        emg.fill(20)
+        flow = np.zeros((img_width,42))
+        flow.fill(40)
+        chest = np.zeros((img_width,14))
+        chest.fill(50)
+        abdomen = np.zeros((img_width,14))
+        abdomen.fill(60)
+        sat = np.zeros((img_width,28))
+        sat.fill(50)
+        
+        """
+        # new_11
+        eeg = np.zeros((img_width,81))
+        eeg.fill(0)
+        eog = np.zeros((img_width,40))
+        eog.fill(10)
+        emg = np.zeros((img_width,21))
+        emg.fill(20)
+        flow = np.zeros((img_width,20))
+        flow.fill(40)
+        chest = np.zeros((img_width,21))
+        chest.fill(50)
+        abdomen = np.zeros((img_width,20))
+        abdomen.fill(60)
+        sat = np.zeros((img_width,21))
+        sat.fill(50)
+        """
+        """
+        # new_09 
+        eeg = np.zeros((img_width,55))
+        eeg.fill(0)
+        eog = np.zeros((img_width,19))
+        eog.fill(10)
+        emg = np.zeros((img_width,18))
+        emg.fill(20)
+        flow = np.zeros((img_width,57))
+        flow.fill(40)
+        chest = np.zeros((img_width,18))
+        chest.fill(50)
+        abdomen = np.zeros((img_width,19))
+        abdomen.fill(60)
+        sat = np.zeros((img_width,38))
+        sat.fill(70)
+        """
+        
+        test = np.concatenate((eeg, eog), axis=1)
+        test = np.concatenate((test, emg), axis=1)
+        test = np.concatenate((test, flow), axis=1)
+        test = np.concatenate((test, chest), axis=1)
+        test = np.concatenate((test, abdomen), axis=1)
+        test = np.concatenate((test, sat), axis=1)
+        #print(np.max(sample))
+        #print(type(np.max(sample)))
+        test = test.T
+        sample += test
 
-        #sample = np.where(sample > 399., 0., sample)
-
-        sample = Image.fromarray(sample.astype('uint8'), 'L')
+        sample = np.where(sample > 255., 255., sample)
+        
+        #sample = Image.fromarray(sample.astype('uint8'), 'L')
 
         return sample
 
@@ -255,16 +382,15 @@ class SleepDataLSTMset(Dataset):
             """
             for s in self.samples[idx]:
                 sample.append(self.__load_img_by_name__(s))
-            
+                target = int(self.samples[idx][2][-5])
+            """
             ##########
             if len(self.samples[idx][2]) < 20:
                 target = int(self.samples[idx][2][-5]) + 5
             elif len(self.samples[idx][2]) > 20:
                 target = int(self.samples[idx][2][-5])
             ##########
-            
-
-            #target = int(self.samples[idx][2][-5])
+            """
             
         else:
             sample = self.__get_img__(idx)

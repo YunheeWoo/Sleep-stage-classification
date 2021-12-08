@@ -49,3 +49,29 @@ class mymodel2(nn.Module):
 
         out = self.pretrained_model(out)
         return out
+
+class FC1(nn.Module):
+    def __init__(self):
+      super(FC1, self).__init__()
+
+      # First fully connected layer
+      self.fc = nn.Linear(3072, 2)
+
+    def forward(self, x):
+      output = self.fc(x)
+
+      return output
+
+class FC2(nn.Module):
+    def __init__(self):
+      super(FC2, self).__init__()
+
+      # First fully connected layer
+      self.fc1 = nn.Linear(3072, 1000)
+      self.fc2 = nn.Linear(1000, 2)
+
+    def forward(self, x):
+      x = self.fc1(x)
+      output = self.fc2(x)
+
+      return output

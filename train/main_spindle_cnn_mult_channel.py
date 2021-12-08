@@ -1,4 +1,5 @@
 import os, sys
+from unicodedata import name
 
 from albumentations.augmentations.functional import normalize
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -47,31 +48,6 @@ from resnet import *
 from cosine_annearing_with_warmup import *
 """
 
-def get_train_transforms():
-    return A.Compose(
-        [
-            #A.Rotate(limit=10, border_mode=cv2.BORDER_REPLICATE, p=0.5),
-            A.Cutout(num_holes=1, max_h_size=16, max_w_size=16, fill_value=0, p=1),
-            #A.Cutout(num_holes=8, max_h_size=1, max_w_size=1, fill_value=1, p=0.5),
-            #A.Resize(32, 32, p=1.),
-            A.Normalize(mean=[0.1551], std=[0.1427]),
-            ToTensorV2(p=1.0),
-        ], 
-        p=1.0)
-
-def get_valid_transforms():
-    return A.Compose(
-        [
-            #A.Rotate(limit=10, border_mode=cv2.BORDER_REPLICATE, p=0.5),
-            #A.Cutout(num_holes=1, max_h_size=16, max_w_size=16, fill_value=0, p=0.5),
-            #A.Cutout(num_holes=8, max_h_size=1, max_w_size=1, fill_value=1, p=0.5),
-            #A.Resize(32, 32, p=1.),
-            A.Normalize(mean=[0.1551], std=[0.1427]),
-            ToTensorV2(p=1.0),
-        ], 
-        p=1.0)
-
-
 #torch.backends.cudnn.enabled = False
 
 parser = argparse.ArgumentParser(description='PyTorch Sleep Stage')
@@ -85,144 +61,137 @@ best_acc = 0  # best test accuracy
 start_epoch = 0  # start from epoch 0 or last checkpoint epoch
 draw = True
 
-data_path = Path("/home/eslab/wyh/data/img/resize/1920x83-448x32/")
-data_path = Path("/home/eslab/wyh/data/img/resize/seoul_hallym_13chn_nb/")
-checkpoint_name = 'Efficientb0-10class-F_C_E_13channel_nb_3-2_back.pth'
-signals = ["F3-M2", "F4-M1", "C3-M2", "C4-M1", "E1-M2", "E2-M1", "Saturation_40-100"]
+data_path = Path("/home/eslab/wyh/data/img/resize/spindle_each_channel_sk/")
 
-#data_path = Path("/home/eslab/wyh/data/img/resize/2000x100-224x32/t-02/mean-std-discard/")
-#checkpoint_name = 'Resnet50-Grayscale-X-X-0.1-0.1-0.001-SGD-Multistep-10,20-0.1-256-msd-2-4-0.2-full-2000,100-224,32-1-grayscale-1-O-X-X-1,4-2.pth'
-#checkpoint_name = 'Resnet50-Grayscale-X-X-0.1-0.1-0.001-SGD-Multistep-10,20-0.1-256-msd-2-7-0.2-full-2000,100-224,32-1-grayscale-1-O-X-X-1,3.pth'
-#signals = ["C3-M2", "C4-M1", "O1-M2", "O2-M1", "E1-M2", "E2-M1", "EMG"]
+checkpoint_name1 = 'SPindle_test_withB_resnet18_rgb_C3-M2.pth'
+checkpoint_name2 = 'SPindle_test_withB_resnet18_rgb_C4-M1.pth'
+checkpoint_name3 = 'SPindle_test_withB_resnet18_rgb_F3-M2.pth'
+checkpoint_name4 = 'SPindle_test_withB_resnet18_rgb_F4-M1.pth'
+checkpoint_name5 = 'SPindle_test_withB_resnet18_rgb_O1-M2.pth'
+checkpoint_name6 = 'SPindle_test_withB_resnet18_rgb_O2-M1.pth'
+checkpoint_name = 'SPindle_test_withB_resnet18_rgb_total_FC2.pth'
 
-batch_size = 128
-class_num = 10
-
-print(checkpoint_name)
+#batch_size = 128
+batch_size = 32
+#batch_size = 1
+class_num = 2
 
 
 # Data
 print('==> Preparing data..')
 
-trainset = SleepDataset("/home/eslab/wyh/train_new.csv", data_path, inv=False, #shuffle=True,
+trainset = SpinleLoaderM("/home/eslab/wyh/spindle_train.csv", data_path, signals=["C3-M2", "C4-M1", "F3-M2", "F4-M1", "O1-M2", "O2-M1"], inv=False, #shuffle=True, 
                             transform=transforms.Compose([
                                     transforms.ToTensor(), 
-                                    transforms.Normalize(mean=[0.5], std=[0.5])
+                                    #transforms.Normalize(mean=[0.5], std=[0.5])
                                     #transforms.Normalize(mean=[0.1551], std=[0.1427])
-                                    #transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+                                    transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
                             ])
                             #transform=get_train_transforms()
 )  
 
-valset = SleepDataset("/home/eslab/wyh/valid_new.csv", data_path, inv=False, #shuffle=True,
+valset = SpinleLoaderM("/home/eslab/wyh/spindle_valid.csv", data_path, signals=["C3-M2", "C4-M1", "F3-M2", "F4-M1", "O1-M2", "O2-M1"], inv=False, #shuffle=True,
                             transform=transforms.Compose([
                                     transforms.ToTensor(), 
                                     #transforms.Normalize(mean=[0.1551], std=[0.1427])
-                                    transforms.Normalize(mean=[0.5], std=[0.5])
-                                    #transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+                                    #transforms.Normalize(mean=[0.5], std=[0.5])
+                                    transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
                             ])
                             #transform=get_valid_transforms()
                             )
 
-testset = SleepDataset("/home/eslab/wyh/test_new.csv", data_path, inv=False, #shuffle=True,
+testset = SpinleLoaderM("/home/eslab/wyh/spindle_test.csv", data_path, signals=["C3-M2", "C4-M1", "F3-M2", "F4-M1", "O1-M2", "O2-M1"], inv=False, #shuffle=True,
                             transform=transforms.Compose([
                                     transforms.ToTensor(), 
                                     #transforms.Normalize(mean=[0.1551], std=[0.1427])
-                                    transforms.Normalize(mean=[0.5], std=[0.5])
-                                    #transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+                                    #transforms.Normalize(mean=[0.5], std=[0.5])
+                                    transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
                             ])
                             #transform=get_valid_transforms()
                             )
-"""
-trainset = SleepDataMaker("/home/eslab/wyh/train_new.csv", data_path, signals,
-                            transform=transforms.Compose([
-                                    transforms.ToTensor(), 
-                                    transforms.Normalize(mean=[0.5], std=[0.5])
-                                    #transforms.Normalize(mean=[0.1551], std=[0.1427])
-                                    #transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
-                            ]), classes=5
-                        )  
 
-valset = SleepDataMaker("/home/eslab/wyh/valid_new.csv", data_path, signals,
-                            transform=transforms.Compose([
-                                    transforms.ToTensor(), 
-                                    transforms.Normalize(mean=[0.5], std=[0.5])
-                                    #transforms.Normalize(mean=[0.1551], std=[0.1427])
-                                    #transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
-                            ]), classes=5
-                        )
-
-testset = SleepDataMaker("/home/eslab/wyh/test_new.csv", data_path, signals,
-                            transform=transforms.Compose([
-                                    transforms.ToTensor(), 
-                                    transforms.Normalize(mean=[0.5], std=[0.5])
-                                    #transforms.Normalize(mean=[0.1551], std=[0.1427])
-                                    #transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
-                            ]), classes=5
-                        )
-"""
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=8)
-valloader = torch.utils.data.DataLoader(valset, batch_size=batch_size, shuffle=True, num_workers=8)
-testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle=True, num_workers=8)
-
-"""
-mean = 0.
-std = 0.
-nb_samples = 0.
-
-for idx, (data,_) in enumerate(trainloader):
-    print(idx)
-    batch_samples = data.size(0)
-    data = data.view(batch_samples, data.size(1), -1)
-    mean += data.mean(2).sum(0)
-    std += data.std(2).sum(0)
-    nb_samples += batch_samples
-
-mean /= nb_samples
-std /= nb_samples
-
-print(mean)
-print(std)
-"""
+trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=False, num_workers=8)
+valloader = torch.utils.data.DataLoader(valset, batch_size=batch_size, shuffle=False, num_workers=8)
+testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=8)
 
 # Model
-print('==> Building model..')
-#net = torch.hub.load('pytorch/vision', 'resnet50', pretrained=True)
-#net.fc = nn.Linear(2048,5)
-net = EfficientNet.from_pretrained('efficientnet-b0', in_channels=1, num_classes=class_num)
-#net = resnet18_grayscale(num_classes=10)
+#print('==> Building model..')
+net1 = torch.hub.load('pytorch/vision', 'resnet18', pretrained=True)
+net1.fc = nn.Linear(512,2)
 
-#net = mymodel2()
+net2 = torch.hub.load('pytorch/vision', 'resnet18', pretrained=True)
+net2.fc = nn.Linear(512,2)
+
+net3 = torch.hub.load('pytorch/vision', 'resnet18', pretrained=True)
+net3.fc = nn.Linear(512,2)
+
+net4 = torch.hub.load('pytorch/vision', 'resnet18', pretrained=True)
+net4.fc = nn.Linear(512,2)
+
+net5 = torch.hub.load('pytorch/vision', 'resnet18', pretrained=True)
+net5.fc = nn.Linear(512,2)
+
+net6 = torch.hub.load('pytorch/vision', 'resnet18', pretrained=True)
+net6.fc = nn.Linear(512,2)
+#net = resnet18_grayscale(num_classes=2)
+
+net = FC2()
+
+net1 = net1.to(device)
+net2 = net2.to(device)
+net3 = net3.to(device)
+net4 = net4.to(device)
+net5 = net5.to(device)
+net6 = net6.to(device)
 net = net.to(device)
+
 if device == 'cuda':
+    net1 = torch.nn.DataParallel(net1)
+    net2 = torch.nn.DataParallel(net2)
+    net3 = torch.nn.DataParallel(net3)
+    net4 = torch.nn.DataParallel(net4)
+    net5 = torch.nn.DataParallel(net5)
+    net6 = torch.nn.DataParallel(net6)
     net = torch.nn.DataParallel(net)
     cudnn.benchmark = True
+
+checkpoint1 = torch.load('./checkpoint/'+checkpoint_name1)
+checkpoint2 = torch.load('./checkpoint/'+checkpoint_name2)
+checkpoint3 = torch.load('./checkpoint/'+checkpoint_name3)
+checkpoint4 = torch.load('./checkpoint/'+checkpoint_name4)
+checkpoint5 = torch.load('./checkpoint/'+checkpoint_name5)
+checkpoint6 = torch.load('./checkpoint/'+checkpoint_name6)
+
+net1.load_state_dict(checkpoint1['net'])
+net2.load_state_dict(checkpoint2['net'])
+net3.load_state_dict(checkpoint3['net'])
+net4.load_state_dict(checkpoint4['net'])
+net5.load_state_dict(checkpoint5['net'])
+net6.load_state_dict(checkpoint6['net'])
+
+net1.module.fc = Identity()
+net2.module.fc = Identity()
+net3.module.fc = Identity()
+net4.module.fc = Identity()
+net5.module.fc = Identity()
+net6.module.fc = Identity()
 
 if args.resume:
     # Load checkpoint.
     print('==> Resuming from checkpoint..')
     assert os.path.isdir('checkpoint'), 'Error: no checkpoint directory found!'
-    checkpoint = torch.load('./checkpoint/'+checkpoint_name)
+    #checkpoint = torch.load('./checkpoint/'+checkpoint_name1)
     #print(checkpoint)
-    net.load_state_dict(checkpoint['net'])
-    best_acc = checkpoint['acc']
-    start_epoch = checkpoint['epoch']
-    scheduler = checkpoint['scheduler']
-    optimizer = checkpoint['optimizer']
+    #net.load_state_dict(checkpoint['net'])
+    #best_acc = checkpoint['acc']
+    #start_epoch = checkpoint['epoch']
+    #scheduler = checkpoint['scheduler']
+    #optimizer = checkpoint['optimizer']
     print("best acc: %lf" %(best_acc))
 else:
     optimizer = optim.SGD(net.parameters(), lr=0.1, momentum=0.9, weight_decay=1e-4)
+    scheduler = MultiStepLR(optimizer, milestones=[20,40], gamma=0.1)
 
-    #scheduler = CosineAnnealingWarmupRestarts(optimizer, first_cycle_steps=30, cycle_mult=1.0, max_lr=0.1, min_lr=0.0001, warmup_steps=5, gamma=0.8)
-    #optimizer = optimizer = optim.AdamW(net.parameters())
-    scheduler = MultiStepLR(optimizer, milestones=[10,20], gamma=0.1)
-
-#optimizer = optim.SGD(net.parameters(), lr=0.01, momentum=0.9, weight_decay=1e-4)
-#scheduler = MultiStepLR(optimizer, milestones=[10,20], gamma=0.1)
-
-#######
-#model, optimizer = amp.initialize(model, optimizer, opt_level="O1")
-#######
 criterion = nn.CrossEntropyLoss()
 
 
@@ -234,10 +203,29 @@ def train(epoch):
     correct = 0
     total = 0
     loop = tqdm(enumerate(trainloader), total=len(trainloader), bar_format='{desc:<10}{percentage:3.0f}%|{bar:10}{r_bar}')
-    for batch_idx, (inputs, targets) in loop:
-        inputs, targets = inputs.to(device, dtype=torch.float), targets.to(device)
+    for batch_idx, (input1, input2, input3, input4, input5, input6, targets) in loop:
+        input1 = input1.to(device, dtype=torch.float)
+        input2 = input2.to(device, dtype=torch.float)
+        input3 = input3.to(device, dtype=torch.float)
+        input4 = input4.to(device, dtype=torch.float)
+        input5 = input5.to(device, dtype=torch.float)
+        input6 = input6.to(device, dtype=torch.float)
+
+        targets = targets.to(device)
+
         optimizer.zero_grad()
+
+        output1 = net1(input1)
+        output2 = net2(input2)
+        output3 = net3(input3)
+        output4 = net4(input4)
+        output5 = net5(input5)
+        output6 = net6(input6)
+
+        inputs = torch.cat([output1,output2,output3,output4,output5,output6], dim=1)
+
         outputs = net(inputs)
+
         loss = criterion(outputs, targets)
         #####
         #with amp.scale_loss(loss, optimizer) as scaled_loss: 
@@ -269,9 +257,27 @@ def valid(epoch):
     total = 0
     with torch.no_grad():
         loop = tqdm(enumerate(valloader), total=len(valloader), bar_format='{desc:<10}{percentage:3.0f}%|{bar:10}{r_bar}')
-        for batch_idx, (inputs, targets) in loop:
-            inputs, targets = inputs.to(device, dtype=torch.float), targets.to(device)
+        for batch_idx, (input1, input2, input3, input4, input5, input6, targets) in loop:
+            input1 = input1.to(device, dtype=torch.float)
+            input2 = input2.to(device, dtype=torch.float)
+            input3 = input3.to(device, dtype=torch.float)
+            input4 = input4.to(device, dtype=torch.float)
+            input5 = input5.to(device, dtype=torch.float)
+            input6 = input6.to(device, dtype=torch.float)
+
+            targets = targets.to(device)
+
+            output1 = net1(input1)
+            output2 = net2(input2)
+            output3 = net3(input3)
+            output4 = net4(input4)
+            output5 = net5(input5)
+            output6 = net6(input6)
+
+            inputs = torch.cat([output1,output2,output3,output4,output5,output6], dim=1)
+
             outputs = net(inputs)
+
             loss = criterion(outputs, targets)
 
             valid_loss += loss.item()
@@ -295,7 +301,6 @@ def valid(epoch):
             'epoch': epoch+1,
             'scheduler' : scheduler,
             'optimizer' : optimizer,
-            #'optimizer': optimizer.state_dict(),
         }
         if not os.path.isdir('checkpoint'):
             os.mkdir('checkpoint')
@@ -315,9 +320,27 @@ def test(epoch):
     total = 0
     with torch.no_grad():
         loop = tqdm(enumerate(testloader), total=len(testloader), bar_format='{desc:<10}{percentage:3.0f}%|{bar:10}{r_bar}')
-        for batch_idx, (inputs, targets) in loop:
-            inputs, targets = inputs.to(device, dtype=torch.float), targets.to(device)
+        for batch_idx, (input1, input2, input3, input4, input5, input6, targets) in loop:
+            input1 = input1.to(device, dtype=torch.float)
+            input2 = input2.to(device, dtype=torch.float)
+            input3 = input3.to(device, dtype=torch.float)
+            input4 = input4.to(device, dtype=torch.float)
+            input5 = input5.to(device, dtype=torch.float)
+            input6 = input6.to(device, dtype=torch.float)
+
+            targets = targets.to(device)
+
+            output1 = net1(input1)
+            output2 = net2(input2)
+            output3 = net3(input3)
+            output4 = net4(input4)
+            output5 = net5(input5)
+            output6 = net6(input6)
+
+            inputs = torch.cat([output1,output2,output3,output4,output5,output6], dim=1)
+
             outputs = net(inputs)
+
             loss = criterion(outputs, targets)
             
             test_loss += loss.item()

@@ -31,6 +31,21 @@ def csv2list(csv_file):
         lst.append(item)
     return lst
 
+def csv2list_unicode(csv_file):
+    f = open(csv_file, 'r')
+    csvf = csv.reader(f)
+    lst = []
+    for item in csvf:
+        temp = []
+        for i in item:
+            if '\n' in i:
+                lst.append(temp)
+                temp = []
+                temp.append(i[1:])
+            else:
+                temp.append(i)
+    return lst
+
 def makecsv(dir, f_name):
     f_list = os.listdir(dir)
     csvfile = open(f_name, 'w', newline="")
