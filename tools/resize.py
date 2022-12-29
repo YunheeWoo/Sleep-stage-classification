@@ -10,8 +10,8 @@ from PIL import Image
 import PIL.ImageOps 
 
 def img_resize(path):
-    src_path = Path("/data/hdd3/medical_image/Chn13_nb/")
-    dst_path = Path("/home/eslab/wyh/data/img/resize/seoul_hallym_13chn_nb/")
+    src_path = Path("/data/ssd2/medical_image/11channel/")
+    dst_path = Path("/home/eslab/wyh/data/img/resize/11channel_224X224")
 
     img = None
     with open(src_path / path, 'rb') as f:
@@ -22,12 +22,12 @@ def img_resize(path):
 
         #img = PIL.ImageOps.invert(img)
 
-        img_resize = img.resize((448, 224))
+        img_resize = img.resize((224, 224))
         img_resize.save(dst_path / path)
 
 if __name__ == '__main__':
-    src_path = Path("/data/hdd3/medical_image/Chn13_nb/")
-    dst_path = Path("/home/eslab/wyh/data/img/resize/seoul_hallym_13chn_nb/")
+    src_path = Path("/data/ssd2/medical_image/11channel/")
+    dst_path = Path("/home/eslab/wyh/data/img/resize/11channel_224X224")
 
     patient = os.listdir(src_path)
 
@@ -47,8 +47,8 @@ if __name__ == '__main__':
             #file_list.append(s+"/"+p+"/"+img)
             file_list.append(p+"/"+img)
 
-    pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
-    #pool = multiprocessing.Pool(processes=18)
+    #pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
+    pool = multiprocessing.Pool(processes=10)
     pool.map(img_resize, file_list)
     pool.close
     pool.join

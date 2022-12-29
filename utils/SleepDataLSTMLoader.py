@@ -9,7 +9,7 @@ from torchvision.datasets import ImageFolder
 import csv
 from PIL import Image
 import PIL.ImageOps 
-from .util import *
+from util import *
 from pathlib import Path
 import random
 
@@ -37,7 +37,7 @@ class SleepDataLSTMset(Dataset):
         dirs = csv2list(csv_file)
 
         skip_list = ['A2019-NX-01-1064_3_', 'A2019-NX-01-0867_3_', 'A2019-NX-01-0581_3_', 'A2020-NX-01-0337_3_', '055_3_', 'A2019-NX-01-0154_3_', 'A2020-NX-01-0753_3_', 'A2019-NX-01-0437_2_', 'A2019-NX-01-1606_3_', 'A2019-NX-01-1331_3_', 'A2019-NX-01-1195_3_', '334_0_', 'A2019-NX-01-1128_3_', 'A2019-NX-01-1133_2_', 'A2019-NX-01-0299_3_', '252_1_', 'A2019-NX-01-0417_3_']
-        #skip_list = []
+        skip_list = []
         """
         ##########
         dirs_temp = csv2list(csv_file)
@@ -54,6 +54,9 @@ class SleepDataLSTMset(Dataset):
             if d[0] in skip_list:
                 continue
 
+            #if len(d[0]) > 15:
+            #    continue
+
             imgs = os.listdir(self.root_dir / d[0])
 
             imgs.sort()
@@ -68,7 +71,7 @@ class SleepDataLSTMset(Dataset):
                 if self.train == True:
                     if int(imgs[img_idx][-5]) == 3:
                         self.samples.append([d[0] + '/' + imgs[img_idx-2], d[0] + '/' + imgs[img_idx-1], d[0] + '/' + imgs[img_idx], d[0] + '/' + imgs[img_idx+1], d[0] + '/' + imgs[img_idx+2]])
-                self.cnt_sample[int(d[0][-2])][int(imgs[img_idx][-5])] += 1
+                #self.cnt_sample[int(d[0][-2])][int(imgs[img_idx][-5])] += 1
 
     def __make_samples__(self, csv_file):
         # Read file list from csv file (each patient)
@@ -229,37 +232,7 @@ class SleepDataLSTMset(Dataset):
         test = test.T
         sample += test
         """
-        """
-        eeg = np.zeros((img_width,71))
-        eeg.fill(0)
-        eog = np.zeros((img_width,23))
-        eog.fill(10)
-        emg = np.zeros((img_width,12))
-        emg.fill(20)
-        ecg = np.zeros((img_width,12))
-        ecg.fill(30)
-        flow = np.zeros((img_width,35))
-        flow.fill(40)
-        chest = np.zeros((img_width,12))
-        chest.fill(50)
-        abdomen = np.zeros((img_width,12))
-        abdomen.fill(60)
-        sat1 = np.zeros((img_width,23))
-        sat1.fill(70)
-        sat2 = np.zeros((img_width,24))
-        sat2.fill(70)
         
-        test = np.concatenate((eeg, eog), axis=1)
-        test = np.concatenate((test, emg), axis=1)
-        test = np.concatenate((test, ecg), axis=1)
-        test = np.concatenate((test, flow), axis=1)
-        test = np.concatenate((test, chest), axis=1)
-        test = np.concatenate((test, abdomen), axis=1)
-        test = np.concatenate((test, sat1), axis=1)
-        test = np.concatenate((test, sat2), axis=1)
-        test = test.T
-        sample += test
-        """
         """
         eeg = np.zeros((img_width,81))
         eeg.fill(0)
@@ -295,22 +268,6 @@ class SleepDataLSTMset(Dataset):
         sat = np.zeros((img_width,27))
         sat.fill(70)
         """
-        # new_13
-        eeg = np.zeros((img_width,84))
-        eeg.fill(0)
-        eog = np.zeros((img_width,28))
-        eog.fill(10)
-        emg = np.zeros((img_width,14))
-        emg.fill(20)
-        flow = np.zeros((img_width,42))
-        flow.fill(40)
-        chest = np.zeros((img_width,14))
-        chest.fill(50)
-        abdomen = np.zeros((img_width,14))
-        abdomen.fill(60)
-        sat = np.zeros((img_width,28))
-        sat.fill(50)
-        
         """
         # new_11
         eeg = np.zeros((img_width,81))
@@ -345,19 +302,18 @@ class SleepDataLSTMset(Dataset):
         sat = np.zeros((img_width,38))
         sat.fill(70)
         """
-        
-        test = np.concatenate((eeg, eog), axis=1)
-        test = np.concatenate((test, emg), axis=1)
-        test = np.concatenate((test, flow), axis=1)
-        test = np.concatenate((test, chest), axis=1)
-        test = np.concatenate((test, abdomen), axis=1)
-        test = np.concatenate((test, sat), axis=1)
-        #print(np.max(sample))
-        #print(type(np.max(sample)))
-        test = test.T
-        sample += test
 
-        sample = np.where(sample > 255., 255., sample)
+        #test = self.background_11channel(sample)
+
+        #sample += test
+        
+        #sample = np.where(sample > 399., 0., sample)
+
+        #test = self.background_15channel(sample)
+
+        #sample += test
+
+        #sample = np.where(sample > 255., 0., sample)
         
         #sample = Image.fromarray(sample.astype('uint8'), 'L')
 
@@ -371,10 +327,8 @@ class SleepDataLSTMset(Dataset):
             """
             matching = []
             setoffs = [-2, -1, 0, 1, 2]
-
             for s in setoffs:
                 target = self.samples[idx][:-10] + str(int(self.samples[idx][-10:-6])+s).zfill(4)
-
                 matching.append([s for s in self.all_samples if target in s][0])
             
             for m in matching:
@@ -383,6 +337,7 @@ class SleepDataLSTMset(Dataset):
             for s in self.samples[idx]:
                 sample.append(self.__load_img_by_name__(s))
                 target = int(self.samples[idx][2][-5])
+            
             """
             ##########
             if len(self.samples[idx][2]) < 20:
@@ -397,8 +352,6 @@ class SleepDataLSTMset(Dataset):
             target = int(self.samples[idx][-5])
 
         #########################################################
-
-        #sample = np.where(sample > 255., 0., sample)
 
         #sample = sample.astype(np.uint8)
 
@@ -415,6 +368,7 @@ class SleepDataLSTMset(Dataset):
 
         for idx, s in enumerate(sample):
             sample[idx] = self.__prefix__(s)
+            
 
         if self.transform is not None:
                 for idx, s in enumerate(sample):
@@ -422,45 +376,161 @@ class SleepDataLSTMset(Dataset):
 
         return sample[0], sample[1], sample[2], sample[3], sample[4], target
 
-"""
-dataset = SleepDataset("/home/eslab/wyh/test_full.csv", Path("/home/eslab/wyh/data/img/resize/2000x100-224x32/t-02/mean-std-discard/"), ["C3-M2", "C4-M1", "O1-M2", "O2-M1", "E1-M2", "E2-M1", "EMG"], color='L', inv=True)
+    def nobackground_11channel(self, sample):
+        img_width, _ = sample.size
 
-#print(len(dataset))
-cnt = 0
+        eeg = np.zeros((img_width,69))
+        eeg.fill(0)
+        eog = np.zeros((img_width,34))
+        eog.fill(0)
+        emg = np.zeros((img_width,17))
+        emg.fill(0)
+        ecg = np.zeros((img_width,17))
+        ecg.fill(0)
+        flow = np.zeros((img_width,52))
+        flow.fill(0)
+        chest = np.zeros((img_width,18))
+        chest.fill(0)
+        abdomen = np.zeros((img_width,17))
+        abdomen.fill(0)
+        
+        test = np.concatenate((eeg, eog), axis=1)
+        test = np.concatenate((test, emg), axis=1)
+        test = np.concatenate((test, ecg), axis=1)
+        test = np.concatenate((test, flow), axis=1)
+        test = np.concatenate((test, chest), axis=1)
+        test = np.concatenate((test, abdomen), axis=1)
+        #print(np.max(sample))
+        #print(type(np.max(sample)))
+        test = test.T
 
-clss = 1
+        return test
 
-#temp = [300, 900, 1800, 3600, 4800]
+    def background_11channel(self, sample):
+        img_width, _ = sample.size
 
-temp = range(200)
+        eeg = np.zeros((img_width,69))
+        eeg.fill(0)
+        eog = np.zeros((img_width,34))
+        eog.fill(10)
+        emg = np.zeros((img_width,17))
+        emg.fill(20)
+        ecg = np.zeros((img_width,17))
+        ecg.fill(30)
+        flow = np.zeros((img_width,52))
+        flow.fill(40)
+        chest = np.zeros((img_width,18))
+        chest.fill(50)
+        abdomen = np.zeros((img_width,17))
+        abdomen.fill(60)
+        
+        test = np.concatenate((eeg, eog), axis=1)
+        test = np.concatenate((test, emg), axis=1)
+        test = np.concatenate((test, ecg), axis=1)
+        test = np.concatenate((test, flow), axis=1)
+        test = np.concatenate((test, chest), axis=1)
+        test = np.concatenate((test, abdomen), axis=1)
+        #print(np.max(sample))
+        #print(type(np.max(sample)))
+        test = test.T
 
-for d in dataset:
-    if d[1] == clss:
-        cnt += 1
-        if cnt in temp:
-            #d[0].save(str(clss)+"_"+str(cnt)+".png")
-            PIL_image = Image.fromarray(d[0].astype('uint8'), 'L')
-            PIL_image.save(str(clss)+"_"+str(cnt).zfill(6)+".png")
-            
-            if cnt == temp[-1]:
-                break
+        return test
 
-"""
+    def background_13channel(self, sample):
+        img_width, _ = sample.size
 
-#cnt = [0,0,0,0,0]
+        # new_13
+        eeg_c3 = np.zeros((img_width,14))
+        eeg_c3.fill(0)
+        eeg_c4 = np.zeros((img_width,14))
+        eeg_c4.fill(0)
+        eeg_f3 = np.zeros((img_width,14))
+        eeg_f3.fill(0)
+        eeg_f4 = np.zeros((img_width,14))
+        eeg_f4.fill(0)
+        eeg_o1 = np.zeros((img_width,14))
+        eeg_o1.fill(0)
+        eeg_o2 = np.zeros((img_width,14))
+        eeg_o2.fill(0)
+        eog1 = np.zeros((img_width,14))
+        eog1.fill(10)
+        eog2 = np.zeros((img_width,14))
+        eog2.fill(10)
+        emg = np.zeros((img_width,14))
+        emg.fill(20)
+        flow = np.zeros((img_width,42))
+        flow.fill(40)
+        chest = np.zeros((img_width,14))
+        chest.fill(50)
+        abdomen = np.zeros((img_width,14))
+        abdomen.fill(60)
+        sat = np.zeros((img_width,28))
+        sat.fill(70)
 
-#dataset =  SleepDataLSTMset("/home/eslab/wyh/test_downsampling.csv", Path("/home/eslab/wyh/data/img/resize/1920x1080-448x224/t-02/mean-std-cut/"), None, inv=False, color="L", train=False)
+        test = np.concatenate((eeg_c3, eeg_c4), axis=1)
+        test = np.concatenate((test, eeg_f3), axis=1)
+        test = np.concatenate((test, eeg_f4), axis=1)
+        test = np.concatenate((test, eeg_o1), axis=1)
+        test = np.concatenate((test, eeg_o2), axis=1)
+        test = np.concatenate((test, eog1), axis=1)
+        test = np.concatenate((test, eog2), axis=1)
+        test = np.concatenate((test, emg), axis=1)
+        test = np.concatenate((test, flow), axis=1)
+        test = np.concatenate((test, chest), axis=1)
+        test = np.concatenate((test, abdomen), axis=1)
+        test = np.concatenate((test, sat), axis=1)
+        test = test.T
 
-#print(dataset.cnt_sample)
+        return test
 
-"""
-for d in dataset:
-    cnt[int(d[-1])] += 1
-#Image.fromarray(np.uint8(dataset[0][0].save("test.png"))).convert('RGB').save("test.png")
-#PIL_image = Image.fromarray(dataset[0][0].astype('uint8'), 'L')
-#PIL_image.save("test210316-1.png")
-#dataset[0][0].save("test11.png")
-#print(dataset[0])
+    def background_15channel(self, sample):
+        img_width, _ = sample.size
 
-print(cnt)
-"""
+        eeg_c3 = np.zeros((img_width,12))
+        eeg_c3.fill(0)
+        eeg_c4 = np.zeros((img_width,12))
+        eeg_c4.fill(0)
+        eeg_f3 = np.zeros((img_width,11))
+        eeg_f3.fill(0)
+        eeg_f4 = np.zeros((img_width,12))
+        eeg_f4.fill(0)
+        eeg_o1 = np.zeros((img_width,12))
+        eeg_o1.fill(0)
+        eeg_o2 = np.zeros((img_width,12))
+        eeg_o2.fill(0)
+        eog1 = np.zeros((img_width,12))
+        eog1.fill(10)
+        eog2 = np.zeros((img_width,11))
+        eog2.fill(10)
+        emg = np.zeros((img_width,12))
+        emg.fill(20)
+        ecg = np.zeros((img_width,12))
+        ecg.fill(30)
+        flow = np.zeros((img_width,35))
+        flow.fill(40)
+        chest = np.zeros((img_width,12))
+        chest.fill(50)
+        abdomen = np.zeros((img_width,12))
+        abdomen.fill(60)
+        sat1 = np.zeros((img_width,23))
+        sat1.fill(70)
+        sat2 = np.zeros((img_width,24))
+        sat2.fill(500)
+        
+        test = np.concatenate((eeg_c3, eeg_c4), axis=1)
+        test = np.concatenate((test, eeg_f3), axis=1)
+        test = np.concatenate((test, eeg_f4), axis=1)
+        test = np.concatenate((test, eeg_o1), axis=1)
+        test = np.concatenate((test, eeg_o2), axis=1)
+        test = np.concatenate((test, eog1), axis=1)
+        test = np.concatenate((test, eog2), axis=1)
+        test = np.concatenate((test, emg), axis=1)
+        test = np.concatenate((test, ecg), axis=1)
+        test = np.concatenate((test, flow), axis=1)
+        test = np.concatenate((test, chest), axis=1)
+        test = np.concatenate((test, abdomen), axis=1)
+        test = np.concatenate((test, sat1), axis=1)
+        test = np.concatenate((test, sat2), axis=1)
+        test = test.T
+
+        return test

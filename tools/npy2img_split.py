@@ -12,7 +12,7 @@ parser.add_argument('--set', type=int, help='set')
 args = parser.parse_args()
 
 width = 1920
-height = 43
+height = 83
 
 def draw_img(data, path, ann, width, height, norm):
 
@@ -50,7 +50,7 @@ def draw_img(data, path, ann, width, height, norm):
             y_min = -abs(np.max(data))
             y_max = abs(np.max(data))
 
-    data = np.reshape(data,(-1,6000))
+    data = np.reshape(data,(-1,3000))
     #annotation = np.load(annotation_path+file)
 
     if not data.shape[0] == len(ann):
@@ -61,8 +61,8 @@ def draw_img(data, path, ann, width, height, norm):
 
     for d_idx in range(data.shape[0]):
         plt.figure(figsize=(width/300,height/300), dpi=300)
-        plt.ylim(y_min, y_max)
-        plt.xlim(0,6000)
+        #plt.ylim(y_min, y_max)
+        plt.xlim(0,3000)
         plt.box(on=None)
         plt.axis('off')
         #plt.tight_layout()
@@ -75,8 +75,8 @@ def draw_img(data, path, ann, width, height, norm):
         plt.clf()
         img_num += 1
 
-src_path = Path("/data/ssd1/dataset/Seoul_dataset/9channel_prefilter_butter/signals_dataloader/")
-dst_path = Path("/home/eslab/wyh/data/butter/")
+src_path = Path("/data/ssd2/1-D_signal/100Hz_normed_divided/")
+dst_path = Path("/data/ssd2/1-D_signal/img_test/")
 
 allow_list = ["EMG", "C3-M2", "C4-M1", "E1-M2", "E2-M1", "F3-M2", "F4-M1", "O1-M2", "O2-M1"]
 
@@ -87,6 +87,7 @@ signal_list = ["EMG", "C3-M2", "C4-M1", "E1-M2", "E2-M1", "F3-M2", "F4-M1", "O1-
 
 patients = os.listdir(src_path)
 patients.sort()
+patients = patients[0:1]
 
 idx = args.idx
 threshold = args.set

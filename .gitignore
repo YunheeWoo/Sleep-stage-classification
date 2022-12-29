@@ -11,6 +11,8 @@ train/grad_cam.py
 
 train/main_ensemble.py
 
+train/models/custom.py
+
 train/samples
 
 train/results
@@ -24,3 +26,13 @@ Sample_img
 train/*png
 
 tools
+
+*.txt
+
+lib/__pycache__
+
+train/__pycache__
+
+train/models/__pycache__
+
+utils/__pycache__

@@ -86,7 +86,7 @@ def draw_img(data, path, ann, width, height, norm):
     for d_idx in range(data.shape[0]):
         #print(data[d_idx].shape)
         plt.figure(figsize=(width/300,height/300), dpi=300)
-        plt.ylim(y_min, y_max)
+        #plt.ylim(y_min, y_max)
         #plt.ylim(39, 100)
         plt.xlim(0,6000)
         #plt.xlim(0,750)
@@ -114,19 +114,19 @@ def makeimg(patients):
     print(patients)
 
 
-    src_path = Path("/data/ssd1/spindle_dataset/preprocessing_data/signals_200Hz/")
+    src_path = Path("/data/hdd2/dataset/1-D_signal/Hallym/signals_200Hz/")
 
-    dst_path = Path("/data/ssd1/spindle_dataset/preprocessing_data/image/")
-    ann_path = Path("/data/ssd1/spindle_dataset/preprocessing_data/annotations/")
+    dst_path = Path("/data/ssd2/1-D_signal/img_test/")
+    ann_path = Path("/data/ssd1/1-D_signal/Hallym/annotations/")
 
-    allow_list = ["E1-M2", "E2-M1"]
+    allow_list = ["C4-M1"]
     #allow_list = ["F3-M2", "F4-M1"]
 
     img_size = str(width) + "x" + str(height) + "/t-02"
 
     normalization = ["min-max-cut", "mean-std-cut", "min-max-discard", "mean-std-discard", "original", "min-max", "mean-std"]
-    #signal_list = ["EMG", "C3-M2", "C4-M1", "E1-M2", "E2-M1", "ECG", "F3-M2", "F4-M1", "Flow", "O1-M2", "O2-M1"]
-    signal_list = ["EMG", "C3-M2", "C4-M1", "E1-M2", "E2-M1", "ECG", "Flow", "O1-M2", "O2-M1"]
+    signal_list = ["EMG", "C3-M2", "C4-M1", "E1-M2", "E2-M1", "ECG", "F3-M2", "F4-M1", "Flow", "O1-M2", "O2-M1"]
+    #signal_list = ["EMG", "C3-M2", "C4-M1", "E1-M2", "E2-M1", "ECG", "Flow", "O1-M2", "O2-M1"]
     #signal_list = ["Abdomen","Chest"]
     #signal_list = ["F3-M2", "F4-M1"]
     #signal_list = ["Saturation_40-100"]
@@ -164,7 +164,7 @@ def makeimg(patients):
             print(datetime.datetime.now())
 
 if __name__ == '__main__':
-    src_path = Path("/data/hdd2/dataset/1-D_signal/Seoul/signals_200Hz/")
+    src_path = Path("/data/hdd2/dataset/1-D_signal/Hallym/signals_200Hz/")
     patients = os.listdir(src_path)
     #patients_pre = ['A2019-NX-01-0384_1_.npy', 'A2019-NX-01-0614_3_.npy', 'A2019-NX-01-0917_3_.npy']
     #patients = [item for item in patients if item not in patients_pre]
