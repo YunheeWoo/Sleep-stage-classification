@@ -1,6 +1,7 @@
 # Sleep-stage-classification
 
-This repository is the official implementation of "Automatic Sleep Stage Classification Using Deep Learning Algorithm for Multi-institutional Database" </br>
+This repository is the official implementation of "Automatic Sleep Stage Classification Using Deep Learning Algorithm for Multi-institutional Database"
+
 Yunhee Woo, Dongyoung Kim, Jaemin Jeong, Won-Sook Lee, Jeong-Gun Lee, and Dong-Kyu Kim
 -----------------------------------------------------------------------------------------------------------------------
 ![preprocessing](https://user-images.githubusercontent.com/39741011/209905155-8c94b5fe-92a8-4e6a-8cdf-8dd988f91bbb.png)
