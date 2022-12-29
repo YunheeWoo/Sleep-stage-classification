@@ -2,25 +2,11 @@ import os, sys
 
 from albumentations.augmentations.functional import normalize
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-sys.path.append('/home/eslab/wyh/Sleep-stage-classification/utils/')
 from utils import *
 from lib import *
 import random
 from efficientnet_pytorch import EfficientNet
 from SleepDataLoader import *
-
-"""
-import torch
-import torch.nn as nn
-import torch.optim as optim
-import torch.nn.functional as F
-import torch.backends.cudnn as cudnn
-
-import torchvision
-import torchvision.transforms as transforms
-from torchvision.datasets import ImageFolder
-from torch.utils.data.sampler import SubsetRandomSampler
-"""
 
 from torch.optim.lr_scheduler import MultiStepLR 
 from torch.optim.lr_scheduler import StepLR
@@ -58,17 +44,9 @@ best_acc = 0  # best test accuracy
 start_epoch = 1  # start from epoch 0 or last checkpoint epoch
 draw = True
 
-#data_path = Path("/home/eslab/wyh/data/img/resize/11channel/")
 data_path = Path("/data/ssd2/medical_image/11channel/")
-#data_path = Path("/home/eslab/wyh/data/img/resize/new_11_newTA_3-2/")
-#checkpoint_name = 'final_test/Efficientb0-5class-11channel-back_normal-re.pth'
 
-#checkpoint_name = '/IEEE_access/ResNet18-5class-11channel-noback.pth'
-#checkpoint_name = '/IEEE_access/EfficientNetB7-5class-11channel-noback.pth'
-#checkpoint_name = 'IEEE_access/EfficientNetB0-5class-11channel-noback.pth'
 checkpoint_name = 'IEEE_access/EfficientNetB0-5class-11channel-noback_fullsize.pth'
-#checkpoint_name = 'final_test/Efficientb0-10class-new11_newTA_3-2_noback.pth'
-
 batch_size = 20
 class_num = 5
 
